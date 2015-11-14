@@ -2,10 +2,11 @@
 
 Book::Book(Feed& feed):
     _feed(feed),
-    _uniqueID(0)
+    _uniqueID(0),
+    _timestamp(0)
 {
     _dummyParticipant._id = 0;
-    _dummyParticipant._status = Participant::Status::INVALID;
+    _dummyParticipant._status = Participant::Status::UNINITIALIZED;
 }
 
 Book::~Book()
@@ -17,31 +18,37 @@ UniqueID Book::GetUniqueID()
     return ++_uniqueID;
 }
 
+UniqueID Book::GetTimestamp()
+{
+    return ++_timestamp;
+}
+
 Order::Status Book::OpenOrder(const Order& order)
 {
     if (_orders.find(order._id) != _orders.end())
         return Order::Status::DUPLICATE;
 
     if (order._quantity == 0)
-        return Order::Status::INVALID;
+        return Order::Status::INVALID_QUANTITY;
 
-    if (_participants.find(order._participantID) == _participants.end())
-        return Order::Status::INVALID;
+    auto partIter = _participants.find(order._participantID);
+    if (partIter == _participants.end())
+        return Order::Status::INVALID_PARTICIPANT;
 
     if (_markets.find(order._marketID) == _markets.end())
-        return Order::Status::INVALID;
+        return Order::Status::INVALID_MARKET;
 
-    Participant& p = _participants[order._participantID];
-    Participant::MarketStats& marketStats = p._marketStats.at(order._marketID);
+    auto& participant = partIter->second;
+    auto& marketStats = participant._marketStats[order._marketID];
 
     if (order._direction == Order::Direction::BUY)
     {
         unsigned int buyEscrow = order._quantity * order._price;
-        if (p._balance < buyEscrow)
+        if (participant._balance < buyEscrow)
             return Order::Status::INSUFFICIENT_BALANCE;
 
-        p._balance   -= buyEscrow;
-        p._buyEscrow += buyEscrow;
+        participant._balance   -= buyEscrow;
+        participant._buyEscrow += buyEscrow;
     }
     else if (order._direction == Order::Direction::SELL) // don't judge
     {
@@ -49,77 +56,237 @@ Order::Status Book::OpenOrder(const Order& order)
         if (uncoveredSellQty < 0)
         {
             unsigned int sellEscrow = order._quantity * order._value;
-            if (p._balance < sellEscrow)
+            if (participant._balance < sellEscrow)
                 return Order::Status::INSUFFICIENT_BALANCE;
 
-            p._balance    -= sellEscrow;
-            p._sellEscrow += sellEscrow;
-            marketStats.sellOrderQtySum += order._quantity;
+            participant._balance    -= sellEscrow;
+            participant._createEscrow += sellEscrow;
         }
+        marketStats.sellOrderQtySum += order._quantity;
     }
 
-    _orders[order._id] = order;
-    _orders[order._id]._status = Order::Status::OPENED;    
-    _markets[order._marketID]._orders.insert(order._id);    
+    auto iterAndBool = _orders.insert(std::pair<UniqueID, Order>(order._id, order));
+    Order& newOrder = iterAndBool.first->second;
+    newOrder._status = Order::Status::OPENED;
+    _markets.at(order._marketID)._orders.insert(order._id);
+    participant._orders.insert(order._id);
 
-    p._orders.insert(order._id);
-
-    _feed.Broadcast(_orders[order._id]);
-    FullfillOrder(_orders[order._id]);
+    _feed.Broadcast(newOrder);
+    FullfillOrder(newOrder);
     return Order::Status::OPENED;
 }
 
-Order::Status Book::CloseOrder(const Order& a_order)
+Order::Status Book::CloseOrder(const UniqueID& oID)
 {
-    auto it = _orders.find(a_order._id);
-    if (it == _orders.end())
-        return Order::Status::INVALID;
+    auto oIter = _orders.find(oID);
+    if (oIter == _orders.end())
+        return Order::Status::NO_SUCH_ORDER;
     
-    Order& order = it->second;
-    
-    if (_participants.find(order._participantID) == _participants.end())
-        return Order::Status::INVALID;
+    auto& order = oIter->second;
+    auto& participant = _participants.at(order._participantID);
+    auto& marketStats = participant._marketStats.at(order._marketID);
 
-    if (_markets.find(order._marketID) == _markets.end())
-        return Order::Status::INVALID;
-
-    Participant& p = _participants[order._participantID];
-    Participant::MarketStats& marketStats = p._marketStats.at(order._marketID);
     if (order._direction == Order::Direction::BUY)
     {
         unsigned int buyEscrow = order._quantity * order._price;
-        p._balance   += buyEscrow;
-        p._buyEscrow -= buyEscrow;
+        participant._balance   += buyEscrow;
+        participant._buyEscrow -= buyEscrow;
     }
     else if (order._direction == Order::Direction::SELL) // don't judge
     {
-        unsigned int sellEscrow = order._quantity * order._value;
-        if (sellEscrow > p._sellEscrow)
+        int currentUncoveredSellQty = std::max(0, marketStats.inventory - marketStats.sellOrderQtySum);        
+        marketStats.sellOrderQtySum -= order._quantity;
+        int newUncoveredSellQty     = std::max(0, marketStats.inventory - marketStats.sellOrderQtySum);
+        
+        int deltaQty = newUncoveredSellQty - currentUncoveredSellQty;
+        if (deltaQty < 0)
         {
-            p._balance   += p._sellEscrow;
-            p._sellEscrow = 0;
+            participant._balance      -= deltaQty * order._value;
+            participant._createEscrow += deltaQty * order._value;
         }
-        else
-        {
-            p._balance    += sellEscrow;
-            p._sellEscrow -= sellEscrow;
-        }
-        marketStats.sellOrderQtySum -= order._quantity;        
     }
 
-    Order result(it->second);
-    _orders.erase(order._id);
-    _participants[order._participantID]._orders.erase(order._id);
-    _markets[order._marketID]._orders.erase(order._id);
+    Order result(order);
+    _orders.erase(oIter);
+    _participants.at(result._participantID)._orders.erase(result._id);
+    _markets.at(result._marketID)._orders.erase(result._id);
     result._status = Order::Status::CLOSED;
     
-    _feed.Broadcast(result);    
+    _feed.Broadcast(result);
     return Order::Status::CLOSED;
 }
 
-void Book::FullfillOrder(const Order& order)
+void Book::FullfillOrder(Order& order)
 {
-    // TODO potentially this new order will trigger sales
+    if (order._direction == Order::Direction::BUY)
+    {
+        FullfillBuyOrder(order);
+    }
+    else if (order._direction == Order::Direction::SELL) // don't judge
+    {
+        FullfillSellOrder(order);
+    }
+}
+
+void Book::FullfillBuyOrder(Order& order)
+{
+    Market& market = _markets.at(order._marketID);
+    auto& sellOrders = market._sellOrders;
+    auto& buyOrders  = market._buyOrders;
+    if (sellOrders.empty())
+    {
+        buyOrders.push(order);
+        return;
+    }
+    while (!sellOrders.empty())
+    {
+        Order existingOrder = sellOrders.top();
+
+        Order& buyOrder = order;
+        Order& sellOrder = existingOrder;
+
+        if (order._price < existingOrder._price)
+        { 
+            buyOrders.push(order);
+            return;
+        }
+
+        sellOrders.pop();
+        Participant& buyer  = _participants.at(buyOrder._participantID);
+        Participant& seller = _participants.at(sellOrder._participantID); 
+
+        Participant::MarketStats& buyerMarketStats   = buyer._marketStats[market._id];
+        Participant::MarketStats& sellerMarketStats  = seller._marketStats[market._id];
+
+        // TODO handle inventory
+
+        if (existingOrder._quantity < order._quantity)
+        {
+            buyer._buyEscrow -= existingOrder._quantity * buyOrder._price;
+            seller._balance  += existingOrder._quantity * buyOrder._price;
+            
+            buyerMarketStats.inventory  += existingOrder._quantity;
+            sellerMarketStats.inventory -= existingOrder._quantity;
+            
+            existingOrder._status = Order::Status::FILLED;
+
+            order._status = Order::Status::PARTIAL_FILLED;
+            order._quantity -= existingOrder._quantity;
+
+            _feed.Broadcast(order);
+            _feed.Broadcast(existingOrder);
+            EraseOrder(existingOrder);
+        }
+        else
+        {
+            buyer._buyEscrow -= order._quantity * buyOrder._price;
+            seller._balance  += order._quantity * buyOrder._price;
+
+            buyerMarketStats.inventory  += order._quantity;
+            sellerMarketStats.inventory -= order._quantity;
+
+            if (existingOrder._quantity > order._quantity)
+            {
+                existingOrder._status = Order::Status::PARTIAL_FILLED;
+                existingOrder._quantity -= order._quantity;
+                sellOrders.push(existingOrder);
+            }
+            else // quantities are equal
+            {
+                existingOrder._status = Order::Status::FILLED;
+                EraseOrder(existingOrder);
+            }
+
+            order._status = Order::Status::FILLED;
+            _feed.Broadcast(order);
+            _feed.Broadcast(existingOrder);
+            EraseOrder(order);
+            return;
+        }   
+    }
+}
+
+void Book::FullfillSellOrder(Order& order)
+{
+    Market& market = _markets.at(order._marketID);
+    auto& sellOrders = market._sellOrders;
+    auto& buyOrders  = market._buyOrders;
+    if (buyOrders.empty())
+    {
+        sellOrders.push(order);
+        return;
+    }
+    while (!buyOrders.empty())
+    {
+        Order existingOrder = buyOrders.top();
+        Order& buyOrder = existingOrder;
+        Order& sellOrder = order;        
+        
+        
+        if (order._price > existingOrder._price)
+        {
+            sellOrders.push(order);
+            return;
+        }
+        
+        buyOrders.pop();
+        Participant& buyer  = _participants.at(buyOrder._participantID);
+        Participant& seller = _participants.at(sellOrder._participantID); 
+
+        // TODO handle inventory
+
+        if (existingOrder._quantity < order._quantity)
+        {
+            buyer._buyEscrow -= existingOrder._quantity * buyOrder._price;
+            seller._balance  += existingOrder._quantity * buyOrder._price;
+            
+            existingOrder._status = Order::Status::FILLED;
+
+            order._status = Order::Status::PARTIAL_FILLED;
+            order._quantity -= existingOrder._quantity;
+
+            _feed.Broadcast(order);
+            _feed.Broadcast(existingOrder);
+            EraseOrder(existingOrder);
+        }
+        else
+        {
+            buyer._buyEscrow -= order._quantity * buyOrder._price;
+            seller._balance  += order._quantity * buyOrder._price;
+
+            if (existingOrder._quantity > order._quantity)
+            {
+                existingOrder._status = Order::Status::PARTIAL_FILLED;
+                existingOrder._quantity -= order._quantity;
+                sellOrders.push(existingOrder);
+            }
+            else // quantities are equal
+            {
+                existingOrder._status = Order::Status::FILLED;
+                EraseOrder(existingOrder);
+            }
+
+            order._status = Order::Status::FILLED;
+            _feed.Broadcast(order);
+            _feed.Broadcast(existingOrder);
+            EraseOrder(order);
+            return;
+        }   
+    }
+}
+
+
+void Book::EraseOrder(const Order& order)
+{
+    _orders.erase(order._id);
+    _participants
+        .at(order._participantID)
+        ._orders
+        .erase(order._id);
+    _markets
+        .at(order._marketID)
+        ._orders
+        .erase(order._id);
 }
 
 
@@ -135,42 +302,67 @@ std::vector<Market> Book::GetMarkets() const
 
 Market::Status Book::OpenMarket(const Market& market)
 {
-    UniqueID id = market._id;
-    if (_markets.find(id) != _markets.end())
+    UniqueID marketID = market._id;
+    if (_markets.find(marketID) != _markets.end())
         return Market::Status::DUPLICATE;
     
     if (market._description == "")
-        return Market::Status::INVALID;
-        
-    _markets[id] = market;
-    _markets[id]._outcome = Market::Outcome::UNKNOWN;
-    _markets[id]._status = Market::Status::OPENED;
-    _feed.Broadcast(_markets.at(id));
+        return Market::Status::INVALID_DESCRIPTION;
+
+    auto iterAndBool = _markets.insert(std::pair<UniqueID, Market>(marketID, market));
+    Market& newMarket = iterAndBool.first->second;
+    newMarket._outcome = Market::Outcome::UNKNOWN;
+    newMarket._status = Market::Status::OPENED;
+
+    _feed.Broadcast(newMarket);
     return Market::Status::OPENED;
 }
 
-Market::Status Book::CloseMarket(const Market& market)
+Market::Status Book::CloseMarket(const UniqueID& marketID, const Market::Outcome& outcome)
 {
-    UniqueID id = market.GetID();
-    if (_markets.find(id) == _markets.end())
-        return Market::Status::INVALID;
-        
-    if (_markets[id].GetStatus() != Market::Status::OPENED)
-        return Market::Status::INVALID;
+    auto marketIter = _markets.find(marketID);
+    if (marketIter == _markets.end())
+        return Market::Status::NO_SUCH_MARKET;
 
-    if (market.GetOutcome() == Market::Outcome::UNKNOWN)
-        return Market::Status::INVALID;
+    if (outcome == Market::Outcome::UNKNOWN)
+        return Market::Status::INVALID_OUTCOME;
 
     for (const auto& oid : _orders)
     {
-        Order order(oid.first);
-        CloseOrder(order);        
+        CloseOrder(oid.first);        
     }
     
-    Market result(_markets.find(id)->second);
-    _markets.erase(id);
-    result.SetStatus(Market::Status::CLOSED)
-          .SetOutcome(market.GetOutcome());
+    for (auto& pPair: _participants)
+    {
+        Participant& participant = pPair.second;
+        auto msIter = participant._marketStats.find(marketID);
+        if (msIter == participant._marketStats.end())
+            continue;
+        
+        if (msIter->second.inventory < 0)
+        {
+            // negative inventory, += subtracts, -= adds
+            participant._createEscrow += msIter->second.inventory * Order::_value;
+            if (outcome == Market::Outcome::FALSE)
+            {
+                participant._balance -= msIter->second.inventory * Order::_value;
+            }
+        }
+        else if (msIter->second.inventory > 0)
+        {
+            if (outcome == Market::Outcome::TRUE)
+            {
+                participant._balance += msIter->second.inventory * Order::_value;
+            }
+        }
+        
+        participant._marketStats.erase(msIter);
+    }
+    
+    Market result(marketIter->second);
+    _markets.erase(marketIter);
+    result._status = Market::Status::CLOSED;
+    result._outcome = outcome;
     _feed.Broadcast(result);
     return Market::Status::CLOSED;    
 }
@@ -205,59 +397,60 @@ std::vector<Order> Book::GetOrders(const Market& market) const
 
 Participant::Status Book::OpenParticipant(const Participant& participant)
 {
-    UniqueID id = participant._id;
+    UniqueID participantID = participant._id;
     
-    if (_participants.find(id) != _participants.end())
+    if (_participants.find(participantID) != _participants.end())
         return Participant::Status::DUPLICATE;
     
     if (participant._buyEscrow != 0)
-        return Participant::Status::INVALID;
+        return Participant::Status::INVALID_ESCROW;
         
     if (participant._name == "")
-        return Participant::Status::INVALID;
+        return Participant::Status::INVALID_NAME;
     
-    _participants[id] = participant;
-    _participants[id]._status = Participant::Status::OPENED;
-    _feed.Broadcast(_participants[id]);
+    auto iterAndBool = _participants.insert(std::pair<UniqueID, Participant>(participantID, participant));
+    Participant& newParticipant = iterAndBool.first->second;
+    
+    newParticipant._status = Participant::Status::OPENED;
+    _feed.Broadcast(newParticipant);
     return Participant::Status::OPENED;
 }
 
-Participant::Status Book::CloseParticipant(const Participant& participant)
+Participant::Status Book::CloseParticipant(const UniqueID& participantID)
 {
-    UniqueID id = participant.GetID();
-    if (_participants.find(id) == _participants.end())
-        return Participant::Status::INVALID;
+    auto participantIter = _participants.find(participantID);
+    if (participantIter == _participants.end())
+        return Participant::Status::NO_SUCH_PARTICIPANT;
         
+    Participant& participant = participantIter->second;
+
     if (participant._buyEscrow != 0)
         return Participant::Status::CAN_NOT_CLOSE;
 
-    if (participant._sellEscrow != 0)
+    if (participant._createEscrow != 0)
         return Participant::Status::CAN_NOT_CLOSE;
 
-    if (participant.GetStatus() != Participant::Status::OPENED)
-        return Participant::Status::CAN_NOT_CLOSE;
-        
     if (!participant._marketStats.empty())
         return Participant::Status::CAN_NOT_CLOSE;
 
-    for (const auto& oid : _participants.find(id)->second._orders)
+    for (const auto& oid : participantIter->second._orders)
     {
-        Order order(oid);
-        CloseOrder(order);        
+        CloseOrder(oid);        
     }
     
-    Participant result(_participants.find(id)->second);
-    _participants.erase(id);
-    result.SetStatus(Participant::Status::CLOSED);
+    Participant result(participant);
+    _participants.erase(participantIter);
+    result._status = Participant::Status::CLOSED;
+
     _feed.Broadcast(result);
     return Participant::Status::CLOSED;    
 }
 
 const Participant& Book::GetParticipant(const UniqueID& participantID) const
 {
-    auto it = _participants.find(participantID);
-    if (it == _participants.end())
+    auto participantIter = _participants.find(participantID);
+    if (participantIter == _participants.end())
         return _dummyParticipant;
     else
-        return it->second;
+        return participantIter->second;
 }

@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Workspace Name="Market" Database="">
-  <Project Name="Book" Path="Book/Book.project" Active="Yes"/>
+  <Project Name="Book" Path="Book/Book.project" Active="No"/>
+  <Project Name="Book-Test" Path="Book-Test/Book-Test.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="Book" ConfigName="Debug"/>
+      <Project Name="Book-Test" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="Book" ConfigName="Release"/>
+      <Project Name="Book-Test" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

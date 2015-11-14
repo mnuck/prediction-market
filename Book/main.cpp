@@ -16,8 +16,7 @@ int main(int argc, char* argv[])
     Market m(id);
     m.SetDescription("A Thing will happen today.");
     b.OpenMarket(m);
-    m.SetOutcome(Market::Outcome::TRUE);
-    b.CloseMarket(m);
+    b.CloseMarket(id, Market::Outcome::TRUE);
 
 	return 0;
 }

@@ -1,13 +1,16 @@
 #include "Market.h"
 
 Market::Market():
-    _id(0)
+    _id(0),
+    _status(Market::Status::UNINITIALIZED),
+    _outcome(Market::Outcome::UNKNOWN),
+    _description("")
 {
 }
 
 Market::Market(const UniqueID& id):
     _id(id),
-    _status(Market::Status::INVALID),
+    _status(Market::Status::UNINITIALIZED),
     _outcome(Market::Outcome::UNKNOWN),
     _description("")
 {
@@ -24,6 +27,17 @@ Market::Market(const Market& rhs):
 Market::~Market()
 {
 }
+
+Market& Market::operator=(const Market& rhs)
+{
+    _id = rhs._id;
+    _status = rhs._status;
+    _outcome = rhs._outcome;
+    _description = rhs._description;
+    
+    return *this;
+}
+
 
 const UniqueID& Market::GetID() const
 {

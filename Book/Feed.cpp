@@ -29,8 +29,8 @@ void Feed::Broadcast(const Order& order)
     case Order::Status::FILLED:
         sStatus = "FILLED";
         break;
-    case Order::Status::INVALID:
-        sStatus = "INVALID";
+    case Order::Status::UNINITIALIZED:
+        sStatus = "UNINITIALIZED";
         break;
     case Order::Status::OPENED:
         sStatus = "OPENED";
@@ -85,8 +85,8 @@ void Feed::Broadcast(const Market& market)
     case Market::Status::DUPLICATE:
         status = "DUPLICATE";
         break;
-    case Market::Status::INVALID:
-        status = "INVALID";
+    case Market::Status::INVALID_DESCRIPTION:
+        status = "INVALID_DESCRIPTION";
         break;
     default:
         status = "BROKEN";

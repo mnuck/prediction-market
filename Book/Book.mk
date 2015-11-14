@@ -5,15 +5,15 @@
 ## Debug
 ProjectName            :=Book
 ConfigurationName      :=Debug
-WorkspacePath          := "C:\Users\Matt\Documents\Market"
-ProjectPath            := "C:\Users\Matt\Documents\Market\Book"
+WorkspacePath          := "C:\Users\mnuck\Documents\prediction-market"
+ProjectPath            := "C:\Users\mnuck\Documents\prediction-market\Book"
 IntermediateDirectory  :=./Debug
 OutDir                 := $(IntermediateDirectory)
 CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
-User                   :=Matt
-Date                   :=10/11/2015
+User                   :=mnuck
+Date                   :=14/11/2015
 CodeLitePath           :="C:\Program Files (x86)\CodeLite"
 LinkerName             :=C:/TDM-GCC-32/bin/g++.exe
 SharedObjectLinkerName :=C:/TDM-GCC-32/bin/g++.exe -shared -fPIC
@@ -94,7 +94,7 @@ PreBuild:
 ## Objects
 ##
 $(IntermediateDirectory)/main.cpp$(ObjectSuffix): main.cpp $(IntermediateDirectory)/main.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/main.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/main.cpp$(DependSuffix): main.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/main.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/main.cpp$(DependSuffix) -MM "main.cpp"
 
@@ -102,7 +102,7 @@ $(IntermediateDirectory)/main.cpp$(PreprocessSuffix): main.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/main.cpp$(PreprocessSuffix) "main.cpp"
 
 $(IntermediateDirectory)/Book.cpp$(ObjectSuffix): Book.cpp $(IntermediateDirectory)/Book.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/Book.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Book.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/Book.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Book.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Book.cpp$(DependSuffix): Book.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Book.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Book.cpp$(DependSuffix) -MM "Book.cpp"
 
@@ -110,7 +110,7 @@ $(IntermediateDirectory)/Book.cpp$(PreprocessSuffix): Book.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Book.cpp$(PreprocessSuffix) "Book.cpp"
 
 $(IntermediateDirectory)/Feed.cpp$(ObjectSuffix): Feed.cpp $(IntermediateDirectory)/Feed.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/Feed.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Feed.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/Feed.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Feed.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Feed.cpp$(DependSuffix): Feed.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Feed.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Feed.cpp$(DependSuffix) -MM "Feed.cpp"
 
@@ -118,7 +118,7 @@ $(IntermediateDirectory)/Feed.cpp$(PreprocessSuffix): Feed.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Feed.cpp$(PreprocessSuffix) "Feed.cpp"
 
 $(IntermediateDirectory)/Participant.cpp$(ObjectSuffix): Participant.cpp $(IntermediateDirectory)/Participant.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/Participant.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Participant.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/Participant.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Participant.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Participant.cpp$(DependSuffix): Participant.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Participant.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Participant.cpp$(DependSuffix) -MM "Participant.cpp"
 
@@ -126,7 +126,7 @@ $(IntermediateDirectory)/Participant.cpp$(PreprocessSuffix): Participant.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Participant.cpp$(PreprocessSuffix) "Participant.cpp"
 
 $(IntermediateDirectory)/Order.cpp$(ObjectSuffix): Order.cpp $(IntermediateDirectory)/Order.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/Order.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Order.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/Order.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Order.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Order.cpp$(DependSuffix): Order.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Order.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Order.cpp$(DependSuffix) -MM "Order.cpp"
 
@@ -134,7 +134,7 @@ $(IntermediateDirectory)/Order.cpp$(PreprocessSuffix): Order.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Order.cpp$(PreprocessSuffix) "Order.cpp"
 
 $(IntermediateDirectory)/Market.cpp$(ObjectSuffix): Market.cpp $(IntermediateDirectory)/Market.cpp$(DependSuffix)
-	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/Matt/Documents/Market/Book/Market.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Market.cpp$(ObjectSuffix) $(IncludePath)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "C:/Users/mnuck/Documents/prediction-market/Book/Market.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Market.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/Market.cpp$(DependSuffix): Market.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Market.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Market.cpp$(DependSuffix) -MM "Market.cpp"
 

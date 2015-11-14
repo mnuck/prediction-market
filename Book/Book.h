@@ -18,24 +18,30 @@ public:
 
     UniqueID GetUniqueID();
 
-    Order::Status OpenOrder(const Order& order); // TODO
-    Order::Status CloseOrder(const Order& order); // TODO
-    void FullfillOrder(const Order& order); // TODO
+    Order::Status OpenOrder(const Order& order);
+    Order::Status CloseOrder(const UniqueID& orderID);
 
     std::vector<Market> GetMarkets() const;
     Market::Status OpenMarket(const Market& market);
-    Market::Status CloseMarket(const Market& outcome);
+    Market::Status CloseMarket(const UniqueID& marketID, const Market::Outcome& outcome);
 
     std::vector<Order> GetOrders(const Participant& participant) const;
     std::vector<Order> GetOrders(const Market& market) const;
 
     Participant::Status OpenParticipant(const Participant& participant);
-    Participant::Status CloseParticipant(const Participant& participant);
-    const Participant& GetParticipant(const UniqueID& participantID) const;
+    Participant::Status CloseParticipant(const UniqueID& participantID);
+    const Participant&  GetParticipant(const UniqueID& participantID) const;
 
 private:
+    UniqueID GetTimestamp();
+    void EraseOrder(const Order& order);
+    void FullfillOrder(Order& order); // TODO
+    void FullfillBuyOrder(Order& order); // TODO
+    void FullfillSellOrder(Order& order); // TODO
+    
     Feed&    _feed;
     UniqueID _uniqueID;
+    UniqueID _timestamp;
 
     std::map<UniqueID, Market>      _markets;
     std::map<UniqueID, Order>       _orders;

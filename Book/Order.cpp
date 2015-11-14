@@ -1,7 +1,14 @@
 #include "Order.h"
 
 Order::Order():
-    _id(0)
+    _id(0),
+    _participantID(0),
+    _marketID(0),
+    _timestamp(0),
+    _status(Order::Status::UNINITIALIZED),
+    _quantity(0),
+    _price(0),
+    _direction(Order::Direction::BUY)
 {
 }
 
@@ -10,7 +17,14 @@ Order::~Order()
 }
 
 Order::Order(const UniqueID& id):
-    _id(id)
+    _id(id),
+    _participantID(0),
+    _marketID(0),
+    _timestamp(0),
+    _status(Order::Status::UNINITIALIZED),
+    _quantity(0),
+    _price(0),
+    _direction(Order::Direction::BUY)
 {
 }
 
@@ -18,20 +32,35 @@ Order::Order(const Order& rhs):
     _id(rhs._id),
     _participantID(rhs._participantID),
     _marketID(rhs._marketID),
-    _status(rhs._status),
     _timestamp(rhs._timestamp),
+    _status(rhs._status),
     _quantity(rhs._quantity),
     _price(rhs._price),
     _direction(rhs._direction)
 {}
+
+bool Order::CompareBuys::operator()(const Order& lhs, const Order& rhs)
+{
+    if (lhs._price == rhs._price)
+        return lhs._timestamp > rhs._timestamp;
+    return lhs._price < rhs._price;
+}
+
+bool Order::CompareSells::operator()(const Order& lhs, const Order& rhs)
+{
+    if (lhs._price == rhs._price)
+        return lhs._timestamp > rhs._timestamp;
+    return lhs._price > rhs._price;
+}
+
 
 Order& Order::operator=(const Order& rhs)
 {
     _id            = rhs._id;
     _participantID = rhs._participantID;
     _marketID      = rhs._marketID;
-    _status        = rhs._status;
     _timestamp     = rhs._timestamp;
+    _status        = rhs._status;
     _quantity      = rhs._quantity;
     _price         = rhs._price;
     _direction     = rhs._direction;
