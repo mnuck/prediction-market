@@ -53,7 +53,8 @@ Order::Status Book::OpenOrder(const Order& order)
     }
     else if (order._direction == Order::Direction::SELL) // don't judge
     {
-        int uncoveredSellQty = marketStats.inventory - (marketStats.sellOrderQtySum + order._quantity);
+        int uncoveredSellQty = 
+            marketStats.inventory - (marketStats.sellOrderQtySum + order._quantity);
         if (uncoveredSellQty < 0)
         {
             unsigned int sellEscrow = order._quantity * order._value;
@@ -66,8 +67,8 @@ Order::Status Book::OpenOrder(const Order& order)
         marketStats.sellOrderQtySum += order._quantity;
     }
 
-    auto iterAndBool = _orders.insert(std::pair<UniqueID, Order>(order._id, order));
-    Order& newOrder = iterAndBool.first->second;
+    Order& newOrder = _orders[order._id];
+    newOrder = order;
     newOrder._status = Order::Status::OPENED;
     newOrder._timestamp = GetTimestamp();
     _markets.at(order._marketID)._orders.insert(order._id);
@@ -96,9 +97,11 @@ Order::Status Book::CloseOrder(const UniqueID& oID)
     }
     else if (order._direction == Order::Direction::SELL) // don't judge
     {
-        int currentUncoveredSellQty = std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);        
+        int currentUncoveredSellQty =
+            std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);        
         marketStats.sellOrderQtySum -= order._quantity;
-        int newUncoveredSellQty     = std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);
+        int newUncoveredSellQty     =
+            std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);
         
         int deltaQty = newUncoveredSellQty - currentUncoveredSellQty;
         if (deltaQty < 0)
@@ -134,9 +137,6 @@ void Book::FullfillOrder(Order& order)
         while (!sellOrders.empty())
         {
             Order existingOrder = sellOrders.top();
-            Order& buyOrder = order;
-            Order& sellOrder = existingOrder;
-
             if (order._price < existingOrder._price)
             { 
                 buyOrders.push(order);
@@ -144,7 +144,7 @@ void Book::FullfillOrder(Order& order)
             }
 
             sellOrders.pop();
-            if (CrossOrders(order, existingOrder, buyOrder, sellOrder, market))
+            if (CrossOrders(order, existingOrder, order, existingOrder, market))
                 return;
         }
     }
@@ -158,9 +158,6 @@ void Book::FullfillOrder(Order& order)
         while (!buyOrders.empty())
         {
             Order existingOrder = buyOrders.top();
-            Order& buyOrder = existingOrder;
-            Order& sellOrder = order;        
-            
             if (order._price > existingOrder._price)
             {
                 sellOrders.push(order);
@@ -168,12 +165,11 @@ void Book::FullfillOrder(Order& order)
             }
             
             buyOrders.pop();
-            if (CrossOrders(order, existingOrder, buyOrder, sellOrder, market))
+            if (CrossOrders(order, existingOrder, existingOrder, order, market))
                 return;   
         }
     }
 }
-
 
 
 bool Book::CrossOrders(
@@ -187,8 +183,8 @@ bool Book::CrossOrders(
     Participant& buyer  = _participants.at(buyOrder._participantID);
     Participant& seller = _participants.at(sellOrder._participantID); 
 
-    Participant::MarketStats& buyerMarketStats   = buyer._marketStats[market._id];
-    Participant::MarketStats& sellerMarketStats  = seller._marketStats[market._id];
+    auto& buyerMarketStats  = buyer._marketStats[market._id];
+    auto& sellerMarketStats = seller._marketStats[market._id];
 
     if (existingOrder._quantity < newOrder._quantity)
     {
@@ -275,8 +271,8 @@ Market::Status Book::OpenMarket(const Market& market)
     if (market._description == "")
         return Market::Status::INVALID_DESCRIPTION;
 
-    auto iterAndBool = _markets.insert(std::pair<UniqueID, Market>(marketID, market));
-    Market& newMarket = iterAndBool.first->second;
+    Market& newMarket = _markets[marketID];
+    newMarket = market;
     newMarket._outcome = Market::Outcome::UNKNOWN;
     newMarket._status = Market::Status::OPENED;
 
@@ -284,7 +280,9 @@ Market::Status Book::OpenMarket(const Market& market)
     return Market::Status::OPENED;
 }
 
-Market::Status Book::CloseMarket(const UniqueID& marketID, const Market::Outcome& outcome)
+Market::Status Book::CloseMarket(
+    const UniqueID& marketID,
+    const Market::Outcome& outcome)
 {
     auto marketIter = _markets.find(marketID);
     if (marketIter == _markets.end())
@@ -305,20 +303,21 @@ Market::Status Book::CloseMarket(const UniqueID& marketID, const Market::Outcome
         if (msIter == participant._marketStats.end())
             continue;
         
-        if (msIter->second.inventory < 0)
+        auto& marketStats = msIter->second;
+        if (marketStats.inventory < 0)
         {
             // negative inventory, += subtracts, -= adds
-            participant._createEscrow += msIter->second.inventory * Order::_value;
+            participant._createEscrow += marketStats.inventory * Order::_value;
             if (outcome == Market::Outcome::FALSE)
             {
-                participant._balance -= msIter->second.inventory * Order::_value;
+                participant._balance -= marketStats.inventory * Order::_value;
             }
         }
-        else if (msIter->second.inventory > 0)
+        else if (marketStats.inventory > 0)
         {
             if (outcome == Market::Outcome::TRUE)
             {
-                participant._balance += msIter->second.inventory * Order::_value;
+                participant._balance += marketStats.inventory * Order::_value;
             }
         }
         
@@ -373,9 +372,9 @@ Participant::Status Book::OpenParticipant(const Participant& participant)
         
     if (participant._name == "")
         return Participant::Status::INVALID_NAME;
-    
-    auto iterAndBool = _participants.insert(std::pair<UniqueID, Participant>(participantID, participant));
-    Participant& newParticipant = iterAndBool.first->second;
+
+    Participant& newParticipant = _participants[participantID];
+    newParticipant = participant;
     
     newParticipant._status = Participant::Status::OPENED;
     _feed.Broadcast(newParticipant);

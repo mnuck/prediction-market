@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Matthew Nuckolls
-Date                   :=14/11/15
+Date                   :=15/11/15
 CodeLitePath           :="/home/mnuck/.codelite"
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -61,7 +61,7 @@ AS       := /usr/bin/as
 ##
 CodeLiteDir:=/usr/share/codelite
 Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/Book.cpp$(ObjectSuffix) $(IntermediateDirectory)/Feed.cpp$(ObjectSuffix) $(IntermediateDirectory)/Participant.cpp$(ObjectSuffix) $(IntermediateDirectory)/Order.cpp$(ObjectSuffix) $(IntermediateDirectory)/Market.cpp$(ObjectSuffix) $(IntermediateDirectory)/FeedStdOut.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestOrderOpenAndClose.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestMarketClose.cpp$(ObjectSuffix) \
-	
+	$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix) 
 
 
 
@@ -171,6 +171,14 @@ $(IntermediateDirectory)/tests_TestMarketClose.cpp$(DependSuffix): tests/TestMar
 
 $(IntermediateDirectory)/tests_TestMarketClose.cpp$(PreprocessSuffix): tests/TestMarketClose.cpp
 	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/tests_TestMarketClose.cpp$(PreprocessSuffix) "tests/TestMarketClose.cpp"
+
+$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix): tests/TestCrossOrders.cpp $(IntermediateDirectory)/tests_TestCrossOrders.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/mnuck/prediction-market/Book/tests/TestCrossOrders.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(DependSuffix): tests/TestCrossOrders.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(DependSuffix) -MM "tests/TestCrossOrders.cpp"
+
+$(IntermediateDirectory)/tests_TestCrossOrders.cpp$(PreprocessSuffix): tests/TestCrossOrders.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/tests_TestCrossOrders.cpp$(PreprocessSuffix) "tests/TestCrossOrders.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

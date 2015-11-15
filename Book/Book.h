@@ -23,7 +23,9 @@ public:
 
     std::vector<Market> GetMarkets() const;
     Market::Status OpenMarket(const Market& market);
-    Market::Status CloseMarket(const UniqueID& marketID, const Market::Outcome& outcome);
+    Market::Status CloseMarket(
+        const UniqueID& marketID,
+        const Market::Outcome& outcome);
 
     std::vector<Order> GetOrders(const Participant& participant) const;
     std::vector<Order> GetOrders(const Market& market) const;
