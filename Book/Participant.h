@@ -23,6 +23,13 @@ public:
         INVALID_NAME,
         CAN_NOT_CLOSE
     };
+
+    struct MarketStats
+    {
+        MarketStats(): inventory(0), sellOrderQtySum(0) {}
+        int inventory;
+        int sellOrderQtySum;
+    };
     
     friend class Book;
 
@@ -40,6 +47,7 @@ public:
     const unsigned int&        GetBuyEscrow() const;
     const unsigned int&        GetCreateEscrow() const;    
     const std::string&         GetName() const;
+    const Participant::MarketStats& GetMarketStats(const UniqueID& marketID) const;
 
     Participant& SetStatus(const Participant::Status& status);
     Participant& SetBalance(const unsigned int& balance);
@@ -55,13 +63,9 @@ private:
     
     std::set<UniqueID> _orders;
     
-    struct MarketStats
-    {
-        MarketStats(): inventory(0), sellOrderQtySum(0) {}
-        int inventory;
-        int sellOrderQtySum;
-    };
     std::map<UniqueID, MarketStats> _marketStats;
+    
+    static const MarketStats _dummyMarketStats;
 };
 
 #endif // PARTICIPANT_H

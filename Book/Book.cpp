@@ -1,12 +1,13 @@
 #include "Book.h"
 
+
+const Participant Book::_dummyParticipant;
+
 Book::Book(Feed& feed):
     _feed(feed),
     _uniqueID(0),
     _timestamp(0)
 {
-    _dummyParticipant._id = 0;
-    _dummyParticipant._status = Participant::Status::UNINITIALIZED;
 }
 
 Book::~Book()
@@ -68,6 +69,7 @@ Order::Status Book::OpenOrder(const Order& order)
     auto iterAndBool = _orders.insert(std::pair<UniqueID, Order>(order._id, order));
     Order& newOrder = iterAndBool.first->second;
     newOrder._status = Order::Status::OPENED;
+    newOrder._timestamp = GetTimestamp();
     _markets.at(order._marketID)._orders.insert(order._id);
     participant._orders.insert(order._id);
 
@@ -94,9 +96,9 @@ Order::Status Book::CloseOrder(const UniqueID& oID)
     }
     else if (order._direction == Order::Direction::SELL) // don't judge
     {
-        int currentUncoveredSellQty = std::max(0, marketStats.inventory - marketStats.sellOrderQtySum);        
+        int currentUncoveredSellQty = std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);        
         marketStats.sellOrderQtySum -= order._quantity;
-        int newUncoveredSellQty     = std::max(0, marketStats.inventory - marketStats.sellOrderQtySum);
+        int newUncoveredSellQty     = std::max(0, marketStats.sellOrderQtySum - marketStats.inventory);
         
         int deltaQty = newUncoveredSellQty - currentUncoveredSellQty;
         if (deltaQty < 0)
@@ -118,161 +120,125 @@ Order::Status Book::CloseOrder(const UniqueID& oID)
 
 void Book::FullfillOrder(Order& order)
 {
-    if (order._direction == Order::Direction::BUY)
-    {
-        FullfillBuyOrder(order);
-    }
-    else if (order._direction == Order::Direction::SELL) // don't judge
-    {
-        FullfillSellOrder(order);
-    }
-}
-
-void Book::FullfillBuyOrder(Order& order)
-{
     Market& market = _markets.at(order._marketID);
     auto& sellOrders = market._sellOrders;
     auto& buyOrders  = market._buyOrders;
-    if (sellOrders.empty())
-    {
-        buyOrders.push(order);
-        return;
-    }
-    while (!sellOrders.empty())
-    {
-        Order existingOrder = sellOrders.top();
 
-        Order& buyOrder = order;
-        Order& sellOrder = existingOrder;
-
-        if (order._price < existingOrder._price)
-        { 
+    if (order._direction == Order::Direction::BUY)
+    {
+        if (sellOrders.empty())
+        {
             buyOrders.push(order);
             return;
         }
-
-        sellOrders.pop();
-        Participant& buyer  = _participants.at(buyOrder._participantID);
-        Participant& seller = _participants.at(sellOrder._participantID); 
-
-        Participant::MarketStats& buyerMarketStats   = buyer._marketStats[market._id];
-        Participant::MarketStats& sellerMarketStats  = seller._marketStats[market._id];
-
-        // TODO handle inventory
-
-        if (existingOrder._quantity < order._quantity)
+        while (!sellOrders.empty())
         {
-            buyer._buyEscrow -= existingOrder._quantity * buyOrder._price;
-            seller._balance  += existingOrder._quantity * buyOrder._price;
-            
-            buyerMarketStats.inventory  += existingOrder._quantity;
-            sellerMarketStats.inventory -= existingOrder._quantity;
-            
-            existingOrder._status = Order::Status::FILLED;
+            Order existingOrder = sellOrders.top();
+            Order& buyOrder = order;
+            Order& sellOrder = existingOrder;
 
-            order._status = Order::Status::PARTIAL_FILLED;
-            order._quantity -= existingOrder._quantity;
+            if (order._price < existingOrder._price)
+            { 
+                buyOrders.push(order);
+                return;
+            }
 
-            _feed.Broadcast(order);
-            _feed.Broadcast(existingOrder);
-            EraseOrder(existingOrder);
+            sellOrders.pop();
+            if (CrossOrders(order, existingOrder, buyOrder, sellOrder, market))
+                return;
         }
-        else
-        {
-            buyer._buyEscrow -= order._quantity * buyOrder._price;
-            seller._balance  += order._quantity * buyOrder._price;
-
-            buyerMarketStats.inventory  += order._quantity;
-            sellerMarketStats.inventory -= order._quantity;
-
-            if (existingOrder._quantity > order._quantity)
-            {
-                existingOrder._status = Order::Status::PARTIAL_FILLED;
-                existingOrder._quantity -= order._quantity;
-                sellOrders.push(existingOrder);
-            }
-            else // quantities are equal
-            {
-                existingOrder._status = Order::Status::FILLED;
-                EraseOrder(existingOrder);
-            }
-
-            order._status = Order::Status::FILLED;
-            _feed.Broadcast(order);
-            _feed.Broadcast(existingOrder);
-            EraseOrder(order);
-            return;
-        }   
     }
-}
-
-void Book::FullfillSellOrder(Order& order)
-{
-    Market& market = _markets.at(order._marketID);
-    auto& sellOrders = market._sellOrders;
-    auto& buyOrders  = market._buyOrders;
-    if (buyOrders.empty())
+    else if (order._direction == Order::Direction::SELL) // don't judge
     {
-        sellOrders.push(order);
-        return;
-    }
-    while (!buyOrders.empty())
-    {
-        Order existingOrder = buyOrders.top();
-        Order& buyOrder = existingOrder;
-        Order& sellOrder = order;        
-        
-        
-        if (order._price > existingOrder._price)
+        if (buyOrders.empty())
         {
             sellOrders.push(order);
             return;
         }
-        
-        buyOrders.pop();
-        Participant& buyer  = _participants.at(buyOrder._participantID);
-        Participant& seller = _participants.at(sellOrder._participantID); 
-
-        // TODO handle inventory
-
-        if (existingOrder._quantity < order._quantity)
+        while (!buyOrders.empty())
         {
-            buyer._buyEscrow -= existingOrder._quantity * buyOrder._price;
-            seller._balance  += existingOrder._quantity * buyOrder._price;
+            Order existingOrder = buyOrders.top();
+            Order& buyOrder = existingOrder;
+            Order& sellOrder = order;        
             
+            if (order._price > existingOrder._price)
+            {
+                sellOrders.push(order);
+                return;
+            }
+            
+            buyOrders.pop();
+            if (CrossOrders(order, existingOrder, buyOrder, sellOrder, market))
+                return;   
+        }
+    }
+}
+
+
+
+bool Book::CrossOrders(
+    Order& newOrder, Order& existingOrder,
+    Order& buyOrder, Order& sellOrder,
+    Market& market)
+{
+    bool done = false;
+    auto& sellOrders = market._sellOrders;
+    auto& buyOrders  = market._buyOrders;
+    Participant& buyer  = _participants.at(buyOrder._participantID);
+    Participant& seller = _participants.at(sellOrder._participantID); 
+
+    Participant::MarketStats& buyerMarketStats   = buyer._marketStats[market._id];
+    Participant::MarketStats& sellerMarketStats  = seller._marketStats[market._id];
+
+    if (existingOrder._quantity < newOrder._quantity)
+    {
+        buyer._buyEscrow -= existingOrder._quantity * buyOrder._price;
+        seller._balance  += existingOrder._quantity * buyOrder._price;
+
+        buyerMarketStats.inventory        += existingOrder._quantity;
+        sellerMarketStats.inventory       -= existingOrder._quantity;
+        sellerMarketStats.sellOrderQtySum -= existingOrder._quantity;
+        
+        existingOrder._status = Order::Status::FILLED;
+
+        newOrder._status = Order::Status::PARTIAL_FILLED;
+        newOrder._quantity -= existingOrder._quantity;
+
+        _feed.Broadcast(newOrder);
+        _feed.Broadcast(existingOrder);
+        EraseOrder(existingOrder);
+    }
+    else
+    {
+        buyer._buyEscrow -= newOrder._quantity * buyOrder._price;
+        seller._balance  += newOrder._quantity * buyOrder._price;
+
+        buyerMarketStats.inventory        += newOrder._quantity;
+        sellerMarketStats.inventory       -= newOrder._quantity;
+        sellerMarketStats.sellOrderQtySum -= newOrder._quantity;
+
+        if (existingOrder._quantity > newOrder._quantity)
+        {
+            existingOrder._status = Order::Status::PARTIAL_FILLED;
+            existingOrder._quantity -= newOrder._quantity;
+            if (existingOrder._direction == Order::Direction::SELL)
+                sellOrders.push(existingOrder);
+            else
+                buyOrders.push(existingOrder);
+        }
+        else // quantities are equal
+        {
             existingOrder._status = Order::Status::FILLED;
-
-            order._status = Order::Status::PARTIAL_FILLED;
-            order._quantity -= existingOrder._quantity;
-
-            _feed.Broadcast(order);
-            _feed.Broadcast(existingOrder);
             EraseOrder(existingOrder);
         }
-        else
-        {
-            buyer._buyEscrow -= order._quantity * buyOrder._price;
-            seller._balance  += order._quantity * buyOrder._price;
 
-            if (existingOrder._quantity > order._quantity)
-            {
-                existingOrder._status = Order::Status::PARTIAL_FILLED;
-                existingOrder._quantity -= order._quantity;
-                sellOrders.push(existingOrder);
-            }
-            else // quantities are equal
-            {
-                existingOrder._status = Order::Status::FILLED;
-                EraseOrder(existingOrder);
-            }
-
-            order._status = Order::Status::FILLED;
-            _feed.Broadcast(order);
-            _feed.Broadcast(existingOrder);
-            EraseOrder(order);
-            return;
-        }   
+        newOrder._status = Order::Status::FILLED;
+        _feed.Broadcast(newOrder);
+        _feed.Broadcast(existingOrder);
+        EraseOrder(newOrder);
+        done = true;
     }
+    return done;    
 }
 
 

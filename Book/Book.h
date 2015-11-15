@@ -35,10 +35,12 @@ public:
 private:
     UniqueID GetTimestamp();
     void EraseOrder(const Order& order);
-    void FullfillOrder(Order& order); // TODO
-    void FullfillBuyOrder(Order& order); // TODO
-    void FullfillSellOrder(Order& order); // TODO
-    
+    void FullfillOrder(Order& order);
+    bool CrossOrders(
+        Order& newOrder, Order& existingOrder,
+        Order& buyOrder, Order& sellOrder,
+        Market& market);
+
     Feed&    _feed;
     UniqueID _uniqueID;
     UniqueID _timestamp;
@@ -46,8 +48,8 @@ private:
     std::map<UniqueID, Market>      _markets;
     std::map<UniqueID, Order>       _orders;
     std::map<UniqueID, Participant> _participants;
-    
-    Participant _dummyParticipant;
+
+    static const Participant _dummyParticipant;
 };
 
 #endif // BOOK_H

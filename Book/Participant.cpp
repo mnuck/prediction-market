@@ -1,5 +1,7 @@
 #include "Participant.h"
 
+const Participant::MarketStats Participant::_dummyMarketStats;
+
 Participant::Participant():
     _id(0),
     _status(Participant::Status::UNINITIALIZED),
@@ -77,10 +79,17 @@ const unsigned int& Participant::GetCreateEscrow() const
     return _createEscrow;
 }
 
-
 const std::string& Participant::GetName() const
 {
     return _name;
+}
+
+const Participant::MarketStats& Participant::GetMarketStats(const UniqueID& marketID) const
+{
+    auto msIter = _marketStats.find(marketID);
+    if (msIter == _marketStats.end())
+        return _dummyMarketStats;
+    return msIter->second;
 }
 
 Participant& Participant::SetStatus(const Status& status)
