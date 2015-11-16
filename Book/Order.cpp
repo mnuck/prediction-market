@@ -1,5 +1,8 @@
 #include "Order.h"
 
+using Book::UniqueID;
+using Book::Order;
+
 Order::Order():
     _id(0),
     _participantID(0),

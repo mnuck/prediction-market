@@ -1,5 +1,8 @@
 #include "Participant.h"
 
+using Book::UniqueID;
+using Book::Participant;
+
 const Participant::MarketStats Participant::_dummyMarketStats;
 
 Participant::Participant():

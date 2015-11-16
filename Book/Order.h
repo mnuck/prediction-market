@@ -3,6 +3,9 @@
 
 #include "UniqueID.h"
 
+namespace Book
+{
+
 class Order
 {
 public:
@@ -77,4 +80,5 @@ private:
     Order::Direction _direction;
 };
 
+}
 #endif // ORDER_H

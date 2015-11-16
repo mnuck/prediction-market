@@ -10,6 +10,10 @@
 #include "Participant.h"
 #include "UniqueID.h"
 
+namespace Book
+{
+
+
 class Book
 {
 public:
@@ -53,5 +57,7 @@ private:
 
     static const Participant _dummyParticipant;
 };
+
+}
 
 #endif // BOOK_H

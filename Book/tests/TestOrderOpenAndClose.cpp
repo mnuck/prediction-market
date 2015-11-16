@@ -3,6 +3,8 @@
 #include "FeedStdOut.h"
 #include "Book.h"
 
+using namespace Book;
+
 SUITE(OrderOpenAndClose)
 {
     class BookFixture
@@ -22,7 +24,7 @@ SUITE(OrderOpenAndClose)
             b.OpenParticipant(p);
         }
         Feed f;
-        Book b;
+        Book::Book b;
         Market m;
         Participant p;
     };

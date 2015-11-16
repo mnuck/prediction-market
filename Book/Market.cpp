@@ -1,5 +1,8 @@
 #include "Market.h"
 
+using Book::UniqueID;
+using Book::Market;
+
 Market::Market():
     _id(0),
     _status(Market::Status::UNINITIALIZED),

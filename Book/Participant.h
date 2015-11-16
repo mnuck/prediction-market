@@ -9,6 +9,9 @@
 #include "Market.h"
 #include "UniqueID.h"
 
+namespace Book
+{
+
 class Participant
 {
 public:    
@@ -64,4 +67,5 @@ private:
     static const MarketStats _dummyMarketStats;
 };
 
+}
 #endif // PARTICIPANT_H

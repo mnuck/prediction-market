@@ -9,9 +9,9 @@ public:
     FeedStdOut();
     ~FeedStdOut();
     
-    void Broadcast(const Order& order);
-    void Broadcast(const Market& market);
-    void Broadcast(const Participant& participant);
+    void Broadcast(const Book::Order& order);
+    void Broadcast(const Book::Market& market);
+    void Broadcast(const Book::Participant& participant);
 };
 
 #endif // FEEDSTDOUT_H

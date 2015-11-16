@@ -8,6 +8,9 @@
 #include "Order.h"
 #include "UniqueID.h"
 
+namespace Book
+{
+
 class Market
 {
 public:
@@ -55,4 +58,5 @@ private:
     std::priority_queue<Order, std::vector<Order>, Order::CompareSells> _sellOrders;
 };
 
+}
 #endif // MARKET_H

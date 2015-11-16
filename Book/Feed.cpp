@@ -15,14 +15,14 @@ Feed::~Feed()
 {
 }
 
-void Feed::Broadcast(const Order& order)
+void Feed::Broadcast(const Book::Order& order)
 {
 }
 
-void Feed::Broadcast(const Market& market)
+void Feed::Broadcast(const Book::Market& market)
 {
 }
 
-void Feed::Broadcast(const Participant& participant)
+void Feed::Broadcast(const Book::Participant& participant)
 {
 }

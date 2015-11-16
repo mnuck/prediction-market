@@ -1,5 +1,7 @@
 #include "Book.h"
 
+namespace Book
+{
 
 const Participant Book::_dummyParticipant;
 
@@ -412,4 +414,6 @@ const Participant& Book::GetParticipant(const UniqueID& participantID) const
         return _dummyParticipant;
     else
         return participantIter->second;
+}
+
 }

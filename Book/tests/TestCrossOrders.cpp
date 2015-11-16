@@ -3,6 +3,8 @@
 #include "FeedStdOut.h"
 #include "Book.h"
 
+using namespace Book;
+
 SUITE(CrossOrders)
 {
     class BookFixture
@@ -33,7 +35,7 @@ SUITE(CrossOrders)
         }
         
         Feed f;
-        Book b;
+        Book::Book b;
         Market m;
         Participant p1, p2, p3;
     };

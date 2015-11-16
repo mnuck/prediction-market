@@ -3,6 +3,8 @@
 #include "FeedStdOut.h"
 #include "Book.h"
 
+using namespace Book;
+
 SUITE(OpenParticipant)
 {
     class BookFixture
@@ -15,7 +17,7 @@ SUITE(OpenParticipant)
             p = Participant(id);
         }
         Feed f;
-        Book b;
+        Book::Book b;
         Participant p;
     };
     

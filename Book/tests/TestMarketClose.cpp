@@ -3,6 +3,8 @@
 #include "FeedStdOut.h"
 #include "Book.h"
 
+using namespace Book;
+
 SUITE(MarketClose)
 {
     class BookFixture
@@ -28,7 +30,7 @@ SUITE(MarketClose)
         }
         
         Feed f;
-        Book b;
+        Book::Book b;
         Market m;
         Participant p1, p2;
     };
