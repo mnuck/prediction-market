@@ -14,7 +14,7 @@ SUITE(OpenParticipant)
             UniqueID id = b.GetUniqueID();
             p = Participant(id);
         }
-        FeedStdOut f;
+        Feed f;
         Book b;
         Participant p;
     };

@@ -23,7 +23,7 @@ SUITE(OrderOpenAndClose)
             b.OpenMarket(m);
             b.OpenParticipant(p);
         }
-        FeedStdOut f;
+        Feed f;
         Book b;
         Market m;
         Participant p;
