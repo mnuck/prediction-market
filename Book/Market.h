@@ -18,8 +18,7 @@ public:
         DUPLICATE,
         NO_SUCH_MARKET,
         UNINITIALIZED,
-        INVALID_DESCRIPTION,
-        INVALID_OUTCOME,
+        INVALID_OUTCOME
     };
     
     enum class Outcome
@@ -41,17 +40,14 @@ public:
     const UniqueID&        GetID() const;
     const Market::Status&  GetStatus() const;
     const Market::Outcome& GetOutcome() const;
-    const std::string&     GetDescription() const;
 
     Market& SetStatus(const Market::Status& status);
     Market& SetOutcome(const Market::Outcome& outcome);
-    Market& SetDescription(const std::string& description);
     
 private:
     UniqueID        _id;
     Market::Status  _status;
     Market::Outcome _outcome;
-    std::string     _description;
     
     std::set<UniqueID> _orders;
     

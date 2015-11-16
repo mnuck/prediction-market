@@ -16,18 +16,14 @@ SUITE(CrossOrders)
             UniqueID p2ID = b.GetUniqueID();
             UniqueID p3ID = b.GetUniqueID();
             m = Market(mID);
-            m.SetDescription("This baby will fuss.");
             
             p1 = Participant(p1ID);
-            p1.SetName("Alice");
             p1.SetBalance(10000);
 
             p2 = Participant(p2ID);
-            p2.SetName("Bob");
             p2.SetBalance(10000);
             
             p3 = Participant(p3ID);
-            p3.SetName("Cheesewiz");
             p3.SetBalance(10000);
             
             b.OpenMarket(m);

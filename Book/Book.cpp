@@ -268,9 +268,6 @@ Market::Status Book::OpenMarket(const Market& market)
     if (_markets.find(marketID) != _markets.end())
         return Market::Status::DUPLICATE;
     
-    if (market._description == "")
-        return Market::Status::INVALID_DESCRIPTION;
-
     Market& newMarket = _markets[marketID];
     newMarket = market;
     newMarket._outcome = Market::Outcome::UNKNOWN;
@@ -366,16 +363,13 @@ Participant::Status Book::OpenParticipant(const Participant& participant)
     
     if (_participants.find(participantID) != _participants.end())
         return Participant::Status::DUPLICATE;
-    
+
     if (participant._buyEscrow != 0)
         return Participant::Status::INVALID_ESCROW;
-        
-    if (participant._name == "")
-        return Participant::Status::INVALID_NAME;
 
     Participant& newParticipant = _participants[participantID];
     newParticipant = participant;
-    
+
     newParticipant._status = Participant::Status::OPENED;
     _feed.Broadcast(newParticipant);
     return Participant::Status::OPENED;

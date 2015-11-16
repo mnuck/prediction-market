@@ -20,7 +20,6 @@ public:
         NO_SUCH_PARTICIPANT,
         UNINITIALIZED,
         INVALID_ESCROW,
-        INVALID_NAME,
         CAN_NOT_CLOSE
     };
 
@@ -46,12 +45,10 @@ public:
     const unsigned int         GetEscrow() const;
     const unsigned int&        GetBuyEscrow() const;
     const unsigned int&        GetCreateEscrow() const;    
-    const std::string&         GetName() const;
     const Participant::MarketStats& GetMarketStats(const UniqueID& marketID) const;
 
     Participant& SetStatus(const Participant::Status& status);
     Participant& SetBalance(const unsigned int& balance);
-    Participant& SetName(const std::string& name);
 
 private:
     UniqueID            _id;
@@ -59,7 +56,6 @@ private:
     unsigned int        _balance;
     unsigned int        _buyEscrow;
     unsigned int        _createEscrow;
-    std::string         _name;
     
     std::set<UniqueID> _orders;
     

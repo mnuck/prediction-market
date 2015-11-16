@@ -14,10 +14,8 @@ SUITE(OrderOpenAndClose)
             UniqueID mID = b.GetUniqueID();
             UniqueID pID = b.GetUniqueID();
             m = Market(mID);
-            m.SetDescription("This baby will fuss.");
             
             p = Participant(pID);
-            p.SetName("Alice");
             p.SetBalance(10000);
             
             b.OpenMarket(m);

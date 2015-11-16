@@ -85,16 +85,12 @@ void FeedStdOut::Broadcast(const Market& market)
     case Market::Status::DUPLICATE:
         status = "DUPLICATE";
         break;
-    case Market::Status::INVALID_DESCRIPTION:
-        status = "INVALID_DESCRIPTION";
-        break;
     default:
         status = "BROKEN";
         break;
     }
     
     cout << "market " << market.GetID() << "\n"
-     << "market " << market.GetDescription() << "\n"
      << "Status:  " << status << "\n"
      << "Outcome: " << outcome << endl;
 }
@@ -102,7 +98,6 @@ void FeedStdOut::Broadcast(const Market& market)
 void FeedStdOut::Broadcast(const Participant& participant)
 {
     cout << "participant " << participant.GetID() << "\n"
-     << "Name: " << participant.GetName() << "\n"
      << "Balance: " << participant.GetBalance() << "\n"
      << "Buy Escrow: " << participant.GetBuyEscrow() << "\n"
      << "Create Escrow: " << participant.GetCreateEscrow() << endl;

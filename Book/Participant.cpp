@@ -7,8 +7,7 @@ Participant::Participant():
     _status(Participant::Status::UNINITIALIZED),
     _balance(0),
     _buyEscrow(0),
-    _createEscrow(0),
-    _name("")
+    _createEscrow(0)
 {
 }
 
@@ -17,8 +16,7 @@ Participant::Participant(const UniqueID& id):
     _status(Participant::Status::UNINITIALIZED),
     _balance(0),
     _buyEscrow(0),
-    _createEscrow(0),
-    _name("")    
+    _createEscrow(0)
 {
 }
 
@@ -27,8 +25,7 @@ Participant::Participant(const Participant& rhs):
     _status(rhs._status),
     _balance(rhs._balance),
     _buyEscrow(rhs._buyEscrow),
-    _createEscrow(rhs._createEscrow),
-    _name(rhs._name)
+    _createEscrow(rhs._createEscrow)
 {
 }
 
@@ -43,7 +40,6 @@ Participant& Participant::operator=(const Participant& rhs)
     _balance    = rhs._balance;
     _buyEscrow  = rhs._buyEscrow;
     _createEscrow = rhs._createEscrow;
-    _name       = rhs._name;
     
     return *this;
 }
@@ -79,11 +75,6 @@ const unsigned int& Participant::GetCreateEscrow() const
     return _createEscrow;
 }
 
-const std::string& Participant::GetName() const
-{
-    return _name;
-}
-
 const Participant::MarketStats& Participant::GetMarketStats(const UniqueID& marketID) const
 {
     auto msIter = _marketStats.find(marketID);
@@ -101,11 +92,5 @@ Participant& Participant::SetStatus(const Status& status)
 Participant& Participant::SetBalance(const unsigned int& balance)
 {
     _balance = balance;
-    return *this;
-}
-
-Participant& Participant::SetName(const std::string& name)
-{
-    _name = name;
     return *this;
 }

@@ -15,14 +15,11 @@ SUITE(MarketClose)
             UniqueID p1ID = b.GetUniqueID();
             UniqueID p2ID = b.GetUniqueID();
             m = Market(mID);
-            m.SetDescription("This baby will fuss.");
             
             p1 = Participant(p1ID);
-            p1.SetName("Alice");
             p1.SetBalance(10000);
 
             p2 = Participant(p2ID);
-            p2.SetName("Bob");
             p2.SetBalance(10000);
             
             b.OpenMarket(m);

@@ -3,24 +3,21 @@
 Market::Market():
     _id(0),
     _status(Market::Status::UNINITIALIZED),
-    _outcome(Market::Outcome::UNKNOWN),
-    _description("")
+    _outcome(Market::Outcome::UNKNOWN)
 {
 }
 
 Market::Market(const UniqueID& id):
     _id(id),
     _status(Market::Status::UNINITIALIZED),
-    _outcome(Market::Outcome::UNKNOWN),
-    _description("")
+    _outcome(Market::Outcome::UNKNOWN)
 {
 }
 
 Market::Market(const Market& rhs):
     _id(rhs._id),
     _status(rhs._status),
-    _outcome(rhs._outcome),
-    _description(rhs._description)
+    _outcome(rhs._outcome)
 {
 }
 
@@ -33,7 +30,6 @@ Market& Market::operator=(const Market& rhs)
     _id = rhs._id;
     _status = rhs._status;
     _outcome = rhs._outcome;
-    _description = rhs._description;
     
     return *this;
 }
@@ -54,11 +50,6 @@ const Market::Outcome& Market::GetOutcome() const
     return _outcome;
 }
 
-const std::string& Market::GetDescription() const
-{
-    return _description;
-}
-
 Market& Market::SetStatus(const Market::Status& status)
 {
     _status = status;
@@ -68,11 +59,5 @@ Market& Market::SetStatus(const Market::Status& status)
 Market& Market::SetOutcome(const Market::Outcome& outcome)
 {
     _outcome = outcome;
-    return *this;
-}
-
-Market& Market::SetDescription(const std::string& description)
-{
-    _description = description;
     return *this;
 }
