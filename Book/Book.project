@@ -34,13 +34,18 @@
     <File Name="UniqueID.h"/>
     <File Name="FeedStdOut.h"/>
     <File Name="FeedStdOut.cpp"/>
+    <File Name="FeedWAMP.h"/>
+    <File Name="FeedWAMP.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="tests">
     <File Name="tests/TestBookParticipantOpen.cpp"/>
     <File Name="tests/TestOrderOpenAndClose.cpp"/>
     <File Name="tests/TestMarketClose.cpp"/>
     <File Name="tests/TestCrossOrders.cpp"/>
+    <File Name="tests/TestWAMP.cpp"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
   <Settings Type="Executable">
     <GlobalSettings>
       <Compiler Options="" C_Options="" Assembler="">
@@ -54,9 +59,14 @@
     <Configuration Name="Debug" CompilerType="MinGW ( TDM-GCC-32 )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-O0;-Wall;-std=c++11" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
+        <IncludePath Value="/home/mnuck/autobahn"/>
+        <IncludePath Value="/home/mnuck/boost_1_58_0"/>
       </Compiler>
       <Linker Options="" Required="yes">
+        <LibraryPath Value="/home/mnuck/boost_1_58_0/stage/lib"/>
         <Library Value="libUnitTest++.a"/>
+        <Library Value="libboost_system"/>
+        <Library Value="libboost_thread"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
@@ -131,6 +141,4 @@
       </Completion>
     </Configuration>
   </Settings>
-  <Dependencies Name="Debug"/>
-  <Dependencies Name="Release"/>
 </CodeLite_Project>

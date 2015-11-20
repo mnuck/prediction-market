@@ -1,11 +1,12 @@
 #include <unittest++/UnitTest++.h>
 
+#include "FeedWAMP.h"
 #include "FeedStdOut.h"
 #include "Book.h"
 
 using namespace Book;
 
-SUITE(WAMPFeed)
+SUITE(OpenParticipant)
 {
     class BookFixture
     {
@@ -16,7 +17,7 @@ SUITE(WAMPFeed)
             UniqueID id = b.GetUniqueID();
             p = Participant(id);
         }
-        Feed f;
+        FeedWAMP f;
         Book::Book b;
         Participant p;
     };
