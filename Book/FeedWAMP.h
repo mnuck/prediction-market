@@ -16,7 +16,6 @@ public:
     virtual void Broadcast(const Book::Order& order);
     virtual void Broadcast(const Book::Market& market);
     virtual void Broadcast(const Book::Participant& participant);
-    
 
     void Connect();
 protected:

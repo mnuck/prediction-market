@@ -1,8 +1,15 @@
+#define BOOST_LOG_DYN_LINK 1
+
+#include <map>
+
+#include <boost/log/trivial.hpp>
 #include <autobahn/autobahn.hpp>
 
 #include "FeedWAMP.h"
+#include "Logger.h"
 
 using namespace boost::asio;
+using boost::future;
 
 FeedWAMP::FeedWAMP():
     _ready(false),
@@ -24,7 +31,9 @@ FeedWAMP::~FeedWAMP()
 
 void FeedWAMP::Connect()
 {
-    bool debug = true;
+    ScopeLog scopelog(__FUNCTION__);
+
+    bool debug = false;
     _session = std::make_shared<autobahn::wamp_session>(_io, debug);
 
     ip::tcp::endpoint endpoint(
@@ -37,55 +46,50 @@ void FeedWAMP::Connect()
     _transport->attach(
         std::static_pointer_cast<autobahn::wamp_transport_handler>(_session));
 
-    boost::future<void> connect_future;
-    boost::future<void> start_future;
-    boost::future<void> join_future;
+    future<void> connect_future;
+    future<void> start_future;
+    future<void> join_future;
 
-    connect_future = _transport->connect().then([&](boost::future<void> connected) {
-        try {
-            connected.get();
-        } catch (const std::exception& e) {
-            std::cerr << e.what() << std::endl;
-            _io.stop();
-            return;
-        }
-
-        if (debug)
-            std::cerr << "transport connected" << std::endl;
-
-        start_future = _session->start().then([&](boost::future<void> started) {
-            try {
-                started.get();
-            } catch (const std::exception& e) {
-                std::cerr << e.what() << std::endl;
-                _io.stop();
-                return;
-            }
-
-            if (debug)
-                std::cerr << "session started" << std::endl;
-
-            join_future = _session->join("realm1").then([&](boost::future<uint64_t> joined) {
-                try {
-                    if (debug)
-                        std::cerr << "joined realm: " << joined.get() << std::endl;
-                    boost::lock_guard<boost::mutex> lock(_cvm);
-                    _ready = true;
-                    _cvReady.notify_all();
-                } catch (const std::exception& e) {
-                    std::cerr << e.what() << std::endl;
-                    _io.stop();
-                    return;
-                }
+    try 
+    {
+        connect_future = _transport->connect().then(
+            [&](future<void> connected) {
+                connected.get();
+            
+                LOG(trace) << "transport connected";
+            
+                start_future = _session->start().then(
+                    [&](future<void> started) {
+                        started.get();
+                    
+                        LOG(trace) << "session started";
+                    
+                        join_future = _session->join("realm1").then(
+                            [&](future<uint64_t> joined) {
+                            
+                                LOG(trace) << "joined realm: " 
+                                                         << joined.get();
+                            
+                                boost::lock_guard<boost::mutex> lock(_cvm);
+                                _ready = true;
+                                _cvReady.notify_all();
+                            });
+                    });
             });
-        });
-    });
 
-    if (debug)
-        std::cerr << "starting io service" << std::endl;
+    } 
+    catch (const std::exception& e)
+    {
+        LOG(error) << __FUNCTION__ 
+                                 << " caught exception: "
+                                 << e.what();
+        _io.stop();
+        return;
+    }
+
+    LOG(trace) << "starting io service";
     _io.run();
-    if (debug)
-        std::cerr << "stopped io service" << std::endl;
+    LOG(trace) << "stopped io service";
 }
 
 void FeedWAMP::Broadcast(const Book::Order& order)
@@ -106,8 +110,13 @@ void FeedWAMP::Broadcast(const Book::Market& market)
 
 void FeedWAMP::Broadcast(const Book::Participant& participant)
 {
-    std::tuple<std::string> arguments(std::string("hello"));
+    std::string topic = "com.examples.subscriptions.topic1";
+    std::tuple<std::string> args(std::string("hello"));
+    std::map<std::string, int> kwargs 
+    {
+        {"id", participant.GetID()},
+    };
 
     if (_ready)
-        _session->publish("com.examples.subscriptions.topic1", arguments).get();
+        _session->publish(topic ,args, kwargs).get();
 }
