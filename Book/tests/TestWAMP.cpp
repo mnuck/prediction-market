@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <unittest++/UnitTest++.h>
 
 #include "FeedWAMP.h"
@@ -6,23 +8,26 @@
 
 using namespace Book;
 
-SUITE(OpenParticipant)
+SUITE(WAMP)
 {
     class BookFixture
     {
     public:
-        BookFixture(): 
-            b(f)
+        BookFixture()
         {
             UniqueID id = b.GetUniqueID();
             p = Participant(id);
+            
+            f = std::make_shared<FeedWAMP>();
+            b.RegisterBroadcastObserver(f);
         }
-        FeedWAMP f;
+        
+        std::shared_ptr<FeedWAMP> f;
         Book::Book b;
         Participant p;
     };
     
-    TEST_FIXTURE(BookFixture, OpenParticipant)
+    TEST_FIXTURE(BookFixture, WAMP)
     {
         p.SetBalance(10000);
         CHECK(b.OpenParticipant(p) == Participant::Status::OPENED);

@@ -5,18 +5,16 @@
 
 using namespace Book;
 
-SUITE(WAMPFeed)
+SUITE(ParticipantOpen)
 {
     class BookFixture
     {
     public:
-        BookFixture(): 
-            b(f)
+        BookFixture()
         {
             UniqueID id = b.GetUniqueID();
             p = Participant(id);
         }
-        Feed f;
         Book::Book b;
         Participant p;
     };

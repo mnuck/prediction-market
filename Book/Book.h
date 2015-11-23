@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "Feed.h"
+#include "BroadcastObservable.h"
 #include "Market.h"
 #include "Order.h"
 #include "Participant.h"
@@ -14,10 +14,10 @@ namespace Book
 {
 
 
-class Book
+class Book : public BroadcastObservable
 {
 public:
-    Book(Feed& feed);
+    Book();
     ~Book();
 
     UniqueID GetUniqueID();
@@ -47,7 +47,6 @@ private:
         Order& buyOrder, Order& sellOrder,
         Market& market);
 
-    Feed&    _feed;
     UniqueID _uniqueID;
     UniqueID _timestamp;
 

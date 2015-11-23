@@ -23,8 +23,6 @@
     <File Name="main.cpp"/>
     <File Name="Book.h"/>
     <File Name="Book.cpp"/>
-    <File Name="Feed.h"/>
-    <File Name="Feed.cpp"/>
     <File Name="Participant.h"/>
     <File Name="Participant.cpp"/>
     <File Name="Order.h"/>
@@ -36,6 +34,13 @@
     <File Name="FeedStdOut.cpp"/>
     <File Name="FeedWAMP.h"/>
     <File Name="FeedWAMP.cpp"/>
+    <File Name="WAMPAPI.cpp"/>
+    <File Name="WAMPAPI.h"/>
+    <File Name="Logger.cpp"/>
+    <File Name="Logger.h"/>
+    <File Name="BroadcastObserver.h"/>
+    <File Name="BroadcastObservable.h"/>
+    <File Name="BroadcastObservable.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="tests">
     <File Name="tests/TestBookParticipantOpen.cpp"/>
@@ -65,8 +70,11 @@
       <Linker Options="" Required="yes">
         <LibraryPath Value="/home/mnuck/boost_1_58_0/stage/lib"/>
         <Library Value="libUnitTest++.a"/>
-        <Library Value="libboost_system"/>
+        <Library Value="libpthread"/>
+        <Library Value="libboost_log"/>
+        <Library Value="libboost_log_setup"/>
         <Library Value="libboost_thread"/>
+        <Library Value="libboost_system"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>

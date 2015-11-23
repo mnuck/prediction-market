@@ -1,17 +1,17 @@
 #ifndef FEEDSTDOUT_H
 #define FEEDSTDOUT_H
 
-#include "Feed.h" // Base class: Feed
+#include "BroadcastObserver.h"
 
-class FeedStdOut : public Feed
+class FeedStdOut : public BroadcastObserver
 {
 public:
     FeedStdOut();
     ~FeedStdOut();
     
-    void Broadcast(const Book::Order& order);
-    void Broadcast(const Book::Market& market);
-    void Broadcast(const Book::Participant& participant);
+    virtual void OnBroadcast(const Book::Order& order);
+    virtual void OnBroadcast(const Book::Market& market);
+    virtual void OnBroadcast(const Book::Participant& participant);
 };
 
 #endif // FEEDSTDOUT_H

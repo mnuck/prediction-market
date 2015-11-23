@@ -1,5 +1,5 @@
-#ifndef FEEDWAMP_H
-#define FEEDWAMP_H
+#ifndef WAMPAPI_H
+#define WAMPAPI_H
 
 #include <autobahn/autobahn.hpp>
 #include <boost/asio.hpp>
@@ -7,18 +7,22 @@
 
 #include "BroadcastObserver.h"
 
-class FeedWAMP : public BroadcastObserver
+#include "Market.h"
+#include "Order.h"
+#include "Participant.h"
+
+class WAMPAPI : public BroadcastObserver
 {
 public:
-    FeedWAMP();
-    ~FeedWAMP();
+    WAMPAPI();
+    ~WAMPAPI();
 
     virtual void OnBroadcast(const Book::Order& order);
     virtual void OnBroadcast(const Book::Market& market);
     virtual void OnBroadcast(const Book::Participant& participant);
 
-    void Connect();
 protected:
+    void Connect();
 
     bool _ready;
     boost::thread _thread;
@@ -30,4 +34,4 @@ protected:
     boost::mutex _cvm;
 };
 
-#endif // FEEDWAMP_H
+#endif // WAMPAPI_H

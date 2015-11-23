@@ -10,8 +10,7 @@ SUITE(MarketClose)
     class BookFixture
     {
     public:
-        BookFixture(): 
-            b(f)
+        BookFixture()
         {
             UniqueID mID  = b.GetUniqueID();
             UniqueID p1ID = b.GetUniqueID();
@@ -28,8 +27,7 @@ SUITE(MarketClose)
             b.OpenParticipant(p1);
             b.OpenParticipant(p2);
         }
-        
-        Feed f;
+
         Book::Book b;
         Market m;
         Participant p1, p2;

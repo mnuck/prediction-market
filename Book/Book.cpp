@@ -5,8 +5,7 @@ namespace Book
 
 const Participant Book::_dummyParticipant;
 
-Book::Book(Feed& feed):
-    _feed(feed),
+Book::Book():
     _uniqueID(0),
     _timestamp(0)
 {
@@ -76,7 +75,7 @@ Order::Status Book::OpenOrder(const Order& order)
     _markets.at(order._marketID)._orders.insert(order._id);
     participant._orders.insert(order._id);
 
-    _feed.Broadcast(newOrder);
+    Broadcast(newOrder);
     FullfillOrder(newOrder);
     return Order::Status::OPENED;
 }
@@ -119,7 +118,7 @@ Order::Status Book::CloseOrder(const UniqueID& oID)
     _markets.at(result._marketID)._orders.erase(result._id);
     result._status = Order::Status::CLOSED;
     
-    _feed.Broadcast(result);
+    Broadcast(result);
     return Order::Status::CLOSED;
 }
 
@@ -202,8 +201,8 @@ bool Book::CrossOrders(
         newOrder._status = Order::Status::PARTIAL_FILLED;
         newOrder._quantity -= existingOrder._quantity;
 
-        _feed.Broadcast(newOrder);
-        _feed.Broadcast(existingOrder);
+        Broadcast(newOrder);
+        Broadcast(existingOrder);
         EraseOrder(existingOrder);
     }
     else
@@ -231,8 +230,8 @@ bool Book::CrossOrders(
         }
 
         newOrder._status = Order::Status::FILLED;
-        _feed.Broadcast(newOrder);
-        _feed.Broadcast(existingOrder);
+        Broadcast(newOrder);
+        Broadcast(existingOrder);
         EraseOrder(newOrder);
         done = true;
     }
@@ -275,7 +274,7 @@ Market::Status Book::OpenMarket(const Market& market)
     newMarket._outcome = Market::Outcome::UNKNOWN;
     newMarket._status = Market::Status::OPENED;
 
-    _feed.Broadcast(newMarket);
+    Broadcast(newMarket);
     return Market::Status::OPENED;
 }
 
@@ -327,7 +326,7 @@ Market::Status Book::CloseMarket(
     _markets.erase(marketIter);
     result._status = Market::Status::CLOSED;
     result._outcome = outcome;
-    _feed.Broadcast(result);
+    Broadcast(result);
     return Market::Status::CLOSED;    
 }
 
@@ -373,7 +372,7 @@ Participant::Status Book::OpenParticipant(const Participant& participant)
     newParticipant = participant;
 
     newParticipant._status = Participant::Status::OPENED;
-    _feed.Broadcast(newParticipant);
+    Broadcast(newParticipant);
     return Participant::Status::OPENED;
 }
 
@@ -403,7 +402,7 @@ Participant::Status Book::CloseParticipant(const UniqueID& participantID)
     _participants.erase(participantIter);
     result._status = Participant::Status::CLOSED;
 
-    _feed.Broadcast(result);
+    Broadcast(result);
     return Participant::Status::CLOSED;    
 }
 

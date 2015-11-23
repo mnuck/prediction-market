@@ -17,7 +17,7 @@ FeedStdOut::~FeedStdOut()
 {
 }
 
-void FeedStdOut::Broadcast(const Order& order)
+void FeedStdOut::OnBroadcast(const Order& order)
 {
     string sStatus;
     switch (order.GetStatus())
@@ -55,7 +55,7 @@ void FeedStdOut::Broadcast(const Order& order)
     
 }
 
-void FeedStdOut::Broadcast(const Market& market)
+void FeedStdOut::OnBroadcast(const Market& market)
 {
     string outcome;
     string status;
@@ -97,7 +97,7 @@ void FeedStdOut::Broadcast(const Market& market)
      << "Outcome: " << outcome << endl;
 }
 
-void FeedStdOut::Broadcast(const Participant& participant)
+void FeedStdOut::OnBroadcast(const Participant& participant)
 {
     cout << "participant " << participant.GetID() << "\n"
      << "Balance: " << participant.GetBalance() << "\n"

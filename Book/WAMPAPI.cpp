@@ -1,26 +1,22 @@
 #define BOOST_LOG_DYN_LINK 1
 
-#include <map>
+#include "WAMPAPI.h"
 
 #include <boost/log/trivial.hpp>
-#include <autobahn/autobahn.hpp>
-
-#include "FeedWAMP.h"
-#include "Logger.h"
 
 using namespace boost::asio;
 using boost::future;
 
-FeedWAMP::FeedWAMP():
+WAMPAPI::WAMPAPI():
     _ready(false),
-    _thread(&FeedWAMP::Connect, this)
+    _thread(&WAMPAPI::Connect, this)
 {
     boost::unique_lock<boost::mutex> lock(_cvm);
     while (!_ready)
         _cvReady.wait(lock);
 }
 
-FeedWAMP::~FeedWAMP()
+WAMPAPI::~WAMPAPI()
 {
     _io.stop();
     if (_thread.joinable())
@@ -29,10 +25,8 @@ FeedWAMP::~FeedWAMP()
     }
 }
 
-void FeedWAMP::Connect()
+void WAMPAPI::Connect()
 {
-    ScopeLog scopelog(__FUNCTION__);
-
     bool debug = false;
     _session = std::make_shared<autobahn::wamp_session>(_io, debug);
 
@@ -56,18 +50,18 @@ void FeedWAMP::Connect()
             [&](future<void> connected) {
                 connected.get();
             
-                LOG(trace) << "transport connected";
+                BOOST_LOG_TRIVIAL(trace) << "transport connected";
             
                 start_future = _session->start().then(
                     [&](future<void> started) {
                         started.get();
                     
-                        LOG(trace) << "session started";
+                        BOOST_LOG_TRIVIAL(trace) << "session started";
                     
                         join_future = _session->join("realm1").then(
                             [&](future<uint64_t> joined) {
                             
-                                LOG(trace) << "joined realm: " 
+                                BOOST_LOG_TRIVIAL(trace) << "joined realm: " 
                                                          << joined.get();
                             
                                 boost::lock_guard<boost::mutex> lock(_cvm);
@@ -80,43 +74,28 @@ void FeedWAMP::Connect()
     } 
     catch (const std::exception& e)
     {
-        LOG(error) << __FUNCTION__ 
+        BOOST_LOG_TRIVIAL(error) << __FUNCTION__ 
                                  << " caught exception: "
                                  << e.what();
         _io.stop();
         return;
     }
 
-    LOG(trace) << "starting io service";
+    BOOST_LOG_TRIVIAL(trace) << "starting io service";
     _io.run();
-    LOG(trace) << "stopped io service";
+    BOOST_LOG_TRIVIAL(trace) << "stopped io service";
 }
 
-void FeedWAMP::OnBroadcast(const Book::Order& order)
+
+void WAMPAPI::OnBroadcast(const Book::Order& order)
 {
-    std::tuple<std::string> arguments(std::string("hello"));
-
-    if (_ready)
-        _session->publish("com.examples.subscriptions.topic1", arguments).get();
 }
 
-void FeedWAMP::OnBroadcast(const Book::Market& market)
+void WAMPAPI::OnBroadcast(const Book::Market& market)
 {
-    std::tuple<std::string> arguments(std::string("hello"));
-
-    if (_ready)
-        _session->publish("com.examples.subscriptions.topic1", arguments).get();
 }
 
-void FeedWAMP::OnBroadcast(const Book::Participant& participant)
+void WAMPAPI::OnBroadcast(const Book::Participant& participant)
 {
-    std::string topic = "com.examples.subscriptions.topic1";
-    std::tuple<std::string> args(std::string("hello"));
-    std::map<std::string, int> kwargs 
-    {
-        {"id", participant.GetID()},
-    };
-
-    if (_ready)
-        _session->publish(topic ,args, kwargs).get();
 }
+
