@@ -41,6 +41,7 @@
     <File Name="BroadcastObserver.h"/>
     <File Name="BroadcastObservable.h"/>
     <File Name="BroadcastObservable.cpp"/>
+    <File Name="WAMPAPI.hpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="tests">
     <File Name="tests/TestBookParticipantOpen.cpp"/>

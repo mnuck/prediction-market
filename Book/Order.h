@@ -1,6 +1,8 @@
 #ifndef ORDER_H
 #define ORDER_H
 
+#include <string>
+
 #include "UniqueID.h"
 
 namespace Book
@@ -57,9 +59,11 @@ public:
     const UniqueID&         GetParticipantID() const;
     const UniqueID&         GetMarketID() const;    
     const Order::Status&    GetStatus() const;
+    const std::string       GetStatusString() const;
     const unsigned int&     GetQuantity() const;
     const unsigned int&     GetPrice() const;
     const Order::Direction& GetDirection() const;
+    const std::string       GetDirectionString() const;
 
     Order& SetParticipantID(const UniqueID& participantID);
     Order& SetMarketID(const UniqueID& marketID);

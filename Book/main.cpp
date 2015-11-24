@@ -7,8 +7,6 @@
 int main(int argc, char **argv)
 {
     ScopeLog scopelog(__FUNCTION__);
-    
-    LOG(warning) << "a thing happened";
-    
+        
     return UnitTest::RunAllTests();
 }

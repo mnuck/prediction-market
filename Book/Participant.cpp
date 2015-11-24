@@ -97,3 +97,34 @@ Participant& Participant::SetBalance(const unsigned int& balance)
     _balance = balance;
     return *this;
 }
+
+const std::string Participant::GetStatusString() const
+{
+    switch (_status)
+    {
+    case Status::OPENED:
+        return "Opened";
+        break;
+    case Status::CLOSED:
+        return "Closed";
+        break;
+    case Status::DUPLICATE:
+        return "Duplicate";
+        break;
+    case Status::NO_SUCH_PARTICIPANT:
+        return "No Such Participant";
+        break;
+    case Status::UNINITIALIZED:
+        return "Uninitialized";
+        break;
+    case Status::INVALID_ESCROW:
+        return "Invalid Escrow";
+        break;
+    case Status::CAN_NOT_CLOSE:
+        return "Can Not Close";
+        break;
+    default:
+        return "Undefined Participant Status";
+        break;
+    }
+}

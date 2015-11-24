@@ -44,6 +44,7 @@ public:
 
     const UniqueID&            GetID() const;
     const Participant::Status& GetStatus() const;
+    const std::string          GetStatusString() const;
     const unsigned int&        GetBalance() const;
     const unsigned int         GetEscrow() const;
     const unsigned int&        GetBuyEscrow() const;

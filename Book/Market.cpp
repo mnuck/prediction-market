@@ -64,3 +64,50 @@ Market& Market::SetOutcome(const Market::Outcome& outcome)
     _outcome = outcome;
     return *this;
 }
+
+const std::string Book::Market::GetStatusString() const
+{
+    switch (_status)
+    {
+    case Status::OPENED:
+        return "Opened";
+        break;
+    case Status::CLOSED:
+        return "Closed";
+        break;
+    case Status::DUPLICATE:
+        return "Duplicate";
+        break;
+    case Status::NO_SUCH_MARKET:
+        return "No Such Market";
+        break;
+    case Status::UNINITIALIZED:
+        return "Uninitialized";
+        break;
+    case Status::INVALID_OUTCOME:
+        return "Invalid Outcome";
+        break;
+    default:
+        return "Undefined Market Status";
+        break;
+    }
+}
+
+const std::string Book::Market::GetOutcomeString() const
+{
+    switch (_outcome)
+    {
+    case Outcome::TRUE:
+        return "True";
+        break;
+    case Outcome::FALSE:
+        return "False";
+        break;
+    case Outcome::UNKNOWN:
+        return "Unknown";
+        break;
+    default:
+        return "Undefined Market Status";
+        break;
+    }
+}
