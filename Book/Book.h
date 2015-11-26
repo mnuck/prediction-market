@@ -21,6 +21,7 @@ public:
     ~Book();
 
     UniqueID GetUniqueID();
+    UniqueID GetTimestamp();
 
     Order::Status OpenOrder(const Order& order);
     Order::Status CloseOrder(const UniqueID& orderID);
@@ -39,7 +40,7 @@ public:
     const Participant&  GetParticipant(const UniqueID& participantID) const;
 
 private:
-    UniqueID GetTimestamp();
+    UniqueID GetPrivateTimestamp();
     void EraseOrder(const Order& order);
     void FullfillOrder(Order& order);
     bool CrossOrders(
@@ -49,6 +50,7 @@ private:
 
     UniqueID _uniqueID;
     UniqueID _timestamp;
+    UniqueID _privateTimestamp;
 
     std::map<UniqueID, Market>      _markets;
     std::map<UniqueID, Order>       _orders;

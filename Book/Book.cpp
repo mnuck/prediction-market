@@ -7,7 +7,8 @@ const Participant Book::_dummyParticipant;
 
 Book::Book():
     _uniqueID(0),
-    _timestamp(0)
+    _timestamp(0),
+    _privateTimestamp(0)
 {
 }
 
@@ -23,6 +24,11 @@ UniqueID Book::GetUniqueID()
 UniqueID Book::GetTimestamp()
 {
     return ++_timestamp;
+}
+
+UniqueID Book::GetPrivateTimestamp()
+{
+    return ++_privateTimestamp;
 }
 
 Order::Status Book::OpenOrder(const Order& order)
@@ -71,7 +77,7 @@ Order::Status Book::OpenOrder(const Order& order)
     Order& newOrder = _orders[order._id];
     newOrder = order;
     newOrder._status = Order::Status::OPENED;
-    newOrder._timestamp = GetTimestamp();
+    newOrder._timestamp = GetPrivateTimestamp();
     _markets.at(order._marketID)._orders.insert(order._id);
     participant._orders.insert(order._id);
 
