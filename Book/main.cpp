@@ -3,10 +3,13 @@
 #include <unittest++/UnitTest++.h>
 
 #include "Logger.h"
+#include "Preferences.h"
 
 int main(int argc, char **argv)
 {
     ScopeLog scopelog(__FUNCTION__);
+    
+    prefs.ReadINI("Book.ini");
     SetLogLevel(prefs.Get("General.LogLevel", 3));
     
     
