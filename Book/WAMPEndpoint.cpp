@@ -1,4 +1,5 @@
 #include "Logger.h"
+#include "Preferences.h"
 #include "WAMPEndpoint.h"
 
 using namespace boost::asio;
@@ -6,8 +7,9 @@ using boost::future;
 
 
 WAMPEndpoint::WAMPEndpoint():
-    _ipAddr("127.0.0.1"),
-    _ipPort(8090),
+    _realm(prefs.Get("WAMPEndpoint.Realm", std::string("default"))),
+    _ipAddr(prefs.Get("WAMPEndpoint.IPAddress",std::string("127.0.0.1"))),
+    _ipPort(prefs.Get("WAMPEndpoint.IPPort", 8090)),
     _ready(false),
     _thread(&WAMPEndpoint::WAMPConnect, this)
 {
