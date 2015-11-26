@@ -1,2 +1,4 @@
 Book/Debug/*
+Book/#*
 Logs/*
+.codelite/*
