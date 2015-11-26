@@ -24,7 +24,7 @@ WAMPEndpoint::~WAMPEndpoint()
     if (_thread.joinable())
     {
         _thread.join();
-    }    
+    }
 }
 
 std::shared_ptr<autobahn::wamp_session> WAMPEndpoint::GetSession()
@@ -51,7 +51,7 @@ void WAMPEndpoint::WAMPConnect()
     future<void> start_future;
     future<void> join_future;
 
-    try 
+    try
     {
         connect_future = _transport->connect().then(
             [&](future<void> connected) {
@@ -68,7 +68,7 @@ void WAMPEndpoint::WAMPConnect()
                         join_future = _session->join(_realm).then(
                             [&](future<uint64_t> joined) {
                             
-                                LOG(trace) << "joined realm: " 
+                                LOG(trace) << "joined realm: "
                                            << joined.get();
 
                                 boost::lock_guard<boost::mutex> lock(_cvm);
@@ -78,10 +78,10 @@ void WAMPEndpoint::WAMPConnect()
                     });
             });
 
-    } 
+    }
     catch (const std::exception& e)
     {
-        LOG(error) << __FUNCTION__ 
+        LOG(error) << __FUNCTION__
                    << " caught exception: "
                    << e.what();
         _io.stop();
