@@ -49,6 +49,42 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, logger_t)
 }
 
 
+bool SetLogLevel(const unsigned int level)
+{
+    bool success = true;
+    auto logger = core::get();
+    switch (level)
+    {
+    case 0:
+        logger->set_filter(severity >= trivial::fatal);
+        break;
+    case 1:
+        logger->set_filter(severity >= trivial::error);
+        break;
+    case 2:
+        logger->set_filter(severity >= trivial::warning);
+        break;
+    case 3:
+        logger->set_filter(severity >= trivial::info);
+        break;
+    case 4:
+        logger->set_filter(severity >= trivial::debug);
+        break;
+    case 5:
+        logger->set_filter(severity >= trivial::trace);
+        break;
+    default:
+        LOG(fatal) << "Logging level NOT set to " << level << " (not actually fatal)";
+        success = false;
+        break;
+    }
+    
+    if (success)
+        LOG(fatal) << "Logging level set to " << level << " (not actually fatal)";
+
+    return success;
+}
+
 ScopeLog::ScopeLog(std::string message):
     _message(message)
 {
