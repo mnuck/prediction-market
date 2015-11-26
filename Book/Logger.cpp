@@ -9,18 +9,20 @@
 #include <boost/log/utility/setup/file.hpp>
 
 using namespace boost::log;
-typedef sources::severity_logger_mt<boost::log::trivial::severity_level> logger_t;
+typedef sources::severity_logger_mt<trivial::severity_level> logger_t;
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(line_id,   "LineID", long)
 BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
+BOOST_LOG_ATTRIBUTE_KEYWORD(p_id, "ProcessID", attributes::current_process_id::value_type);
+BOOST_LOG_ATTRIBUTE_KEYWORD(t_id, "ThreadID", attributes::current_thread_id::value_type);
 BOOST_LOG_ATTRIBUTE_KEYWORD(severity,  "Severity", trivial::severity_level)
  
 BOOST_LOG_GLOBAL_LOGGER_INIT(logger, logger_t)
 {
     logger_t logger;
  
-    logger.add_attribute("LineID", attributes::counter<long>(1));
-    logger.add_attribute("TimeStamp", attributes::local_clock());
+    logger.add_attribute("TimeStamp", attributes::utc_clock());
+    logger.add_attribute("ProcessID", attributes::current_process_id());
+    logger.add_attribute("ThreadID", attributes::current_thread_id());
 
     core::get()->add_sink
     (
@@ -34,9 +36,9 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, logger_t)
             keywords::format =
             (
                 expressions::stream
-                    << expressions::attr<long>("LineID") << ": "
                     << "[" << expressions::format_date_time<boost::posix_time::ptime>
                               ("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "] "
+                    << "(" << p_id << ":" << t_id << ") "
                     << "(" << trivial::severity << ") "
                     << expressions::smessage
             )
