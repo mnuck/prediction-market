@@ -7,9 +7,9 @@ using boost::future;
 
 
 WAMPEndpoint::WAMPEndpoint():
-    _realm(prefs.Get("WAMPEndpoint.Realm", std::string("default"))),
-    _ipAddr(prefs.Get("WAMPEndpoint.IPAddress",std::string("127.0.0.1"))),
-    _ipPort(prefs.Get("WAMPEndpoint.IPPort", 8090)),
+    _realm(prefs.Get("WAMP.Realm", std::string("default"))),
+    _ipAddr(prefs.Get("WAMP.IPAddress",std::string("127.0.0.1"))),
+    _ipPort(prefs.Get("WAMP.IPPort", 8090)),
     _ready(false),
     _thread(&WAMPEndpoint::WAMPConnect, this)
 {
@@ -34,7 +34,7 @@ std::shared_ptr<autobahn::wamp_session> WAMPEndpoint::GetSession()
 
 void WAMPEndpoint::WAMPConnect()
 {
-    ScopeLog scopelog("WAMPAPI::Connect");
+    ScopeLog scopelog("WAMPEndpoint::Connect");
     
     bool debug = false;
     _session = std::make_shared<autobahn::wamp_session>(_io, debug);
@@ -65,7 +65,7 @@ void WAMPEndpoint::WAMPConnect()
                     
                         LOG(trace) << "session started";
                     
-                        join_future = _session->join(_realm).then(
+                        join_future = _session->join("realm1").then(
                             [&](future<uint64_t> joined) {
                             
                                 LOG(trace) << "joined realm: "
@@ -77,7 +77,6 @@ void WAMPEndpoint::WAMPConnect()
                             });
                     });
             });
-
     }
     catch (const std::exception& e)
     {

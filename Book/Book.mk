@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Matthew Nuckolls
-Date                   :=24/11/15
+Date                   :=27/11/15
 CodeLitePath           :="/home/mnuck/.codelite"
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -35,12 +35,12 @@ PreprocessOnlySwitch   :=-E
 ObjectsFileList        :="Book.txt"
 PCHCompileFlags        :=
 MakeDirCommand         :=mkdir -p
-LinkOptions            :=  
+LinkOptions            :=  -pthread
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)/home/mnuck/autobahn $(IncludeSwitch)/home/mnuck/boost_1_58_0 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)UnitTest++ $(LibrarySwitch)pthread $(LibrarySwitch)boost_log $(LibrarySwitch)boost_log_setup $(LibrarySwitch)boost_thread $(LibrarySwitch)boost_system 
-ArLibs                 :=  "libUnitTest++.a" "libpthread" "libboost_log" "libboost_log_setup" "libboost_thread" "libboost_system" 
+Libs                   := $(LibrarySwitch)UnitTest++ $(LibrarySwitch)boost_log $(LibrarySwitch)boost_log_setup $(LibrarySwitch)boost_thread $(LibrarySwitch)boost_system 
+ArLibs                 :=  "libUnitTest++.a" "libboost_log" "libboost_log_setup" "libboost_thread" "libboost_system" 
 LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/home/mnuck/boost_1_58_0/stage/lib 
 
 ##
@@ -61,7 +61,7 @@ AS       := /usr/bin/as
 ##
 CodeLiteDir:=/usr/share/codelite
 Objects0=$(IntermediateDirectory)/main.cpp$(ObjectSuffix) $(IntermediateDirectory)/Book.cpp$(ObjectSuffix) $(IntermediateDirectory)/Participant.cpp$(ObjectSuffix) $(IntermediateDirectory)/Order.cpp$(ObjectSuffix) $(IntermediateDirectory)/Market.cpp$(ObjectSuffix) $(IntermediateDirectory)/FeedStdOut.cpp$(ObjectSuffix) $(IntermediateDirectory)/FeedWAMP.cpp$(ObjectSuffix) $(IntermediateDirectory)/WAMPAPI.cpp$(ObjectSuffix) $(IntermediateDirectory)/Logger.cpp$(ObjectSuffix) $(IntermediateDirectory)/BroadcastObservable.cpp$(ObjectSuffix) \
-	$(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestOrderOpenAndClose.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestMarketClose.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestWAMP.cpp$(ObjectSuffix) 
+	$(IntermediateDirectory)/WAMPEndpoint.cpp$(ObjectSuffix) $(IntermediateDirectory)/Preferences.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestOrderOpenAndClose.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestMarketClose.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestCrossOrders.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestWAMP.cpp$(ObjectSuffix) $(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(ObjectSuffix) 
 
 
 
@@ -172,6 +172,22 @@ $(IntermediateDirectory)/BroadcastObservable.cpp$(DependSuffix): BroadcastObserv
 $(IntermediateDirectory)/BroadcastObservable.cpp$(PreprocessSuffix): BroadcastObservable.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/BroadcastObservable.cpp$(PreprocessSuffix) "BroadcastObservable.cpp"
 
+$(IntermediateDirectory)/WAMPEndpoint.cpp$(ObjectSuffix): WAMPEndpoint.cpp $(IntermediateDirectory)/WAMPEndpoint.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/mnuck/prediction-market/Book/WAMPEndpoint.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/WAMPEndpoint.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/WAMPEndpoint.cpp$(DependSuffix): WAMPEndpoint.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/WAMPEndpoint.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/WAMPEndpoint.cpp$(DependSuffix) -MM "WAMPEndpoint.cpp"
+
+$(IntermediateDirectory)/WAMPEndpoint.cpp$(PreprocessSuffix): WAMPEndpoint.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/WAMPEndpoint.cpp$(PreprocessSuffix) "WAMPEndpoint.cpp"
+
+$(IntermediateDirectory)/Preferences.cpp$(ObjectSuffix): Preferences.cpp $(IntermediateDirectory)/Preferences.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/mnuck/prediction-market/Book/Preferences.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/Preferences.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/Preferences.cpp$(DependSuffix): Preferences.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/Preferences.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/Preferences.cpp$(DependSuffix) -MM "Preferences.cpp"
+
+$(IntermediateDirectory)/Preferences.cpp$(PreprocessSuffix): Preferences.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/Preferences.cpp$(PreprocessSuffix) "Preferences.cpp"
+
 $(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(ObjectSuffix): tests/TestBookParticipantOpen.cpp $(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(DependSuffix)
 	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/mnuck/prediction-market/Book/tests/TestBookParticipantOpen.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(ObjectSuffix) $(IncludePath)
 $(IntermediateDirectory)/tests_TestBookParticipantOpen.cpp$(DependSuffix): tests/TestBookParticipantOpen.cpp
@@ -211,6 +227,14 @@ $(IntermediateDirectory)/tests_TestWAMP.cpp$(DependSuffix): tests/TestWAMP.cpp
 
 $(IntermediateDirectory)/tests_TestWAMP.cpp$(PreprocessSuffix): tests/TestWAMP.cpp
 	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/tests_TestWAMP.cpp$(PreprocessSuffix) "tests/TestWAMP.cpp"
+
+$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(ObjectSuffix): tests/TestWAMPAPI.cpp $(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(DependSuffix)
+	$(CXX) $(IncludePCH) $(SourceSwitch) "/home/mnuck/prediction-market/Book/tests/TestWAMPAPI.cpp" $(CXXFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(DependSuffix): tests/TestWAMPAPI.cpp
+	@$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(ObjectSuffix) -MF$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(DependSuffix) -MM "tests/TestWAMPAPI.cpp"
+
+$(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(PreprocessSuffix): tests/TestWAMPAPI.cpp
+	$(CXX) $(CXXFLAGS) $(IncludePCH) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/tests_TestWAMPAPI.cpp$(PreprocessSuffix) "tests/TestWAMPAPI.cpp"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)

@@ -42,6 +42,14 @@
     <File Name="BroadcastObservable.h"/>
     <File Name="BroadcastObservable.cpp"/>
     <File Name="WAMPAPI.hpp"/>
+    <File Name="WAMPEndpoint.cpp"/>
+    <File Name="WAMPEndpoint.h"/>
+    <File Name="WorkQueue.hpp"/>
+    <File Name="Preferences.h"/>
+    <File Name="Preferences.cpp"/>
+    <File Name="Observable.hpp"/>
+    <File Name="Observable.ipp"/>
+    <File Name="Observer.hpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="tests">
     <File Name="tests/TestBookParticipantOpen.cpp"/>
@@ -49,6 +57,7 @@
     <File Name="tests/TestMarketClose.cpp"/>
     <File Name="tests/TestCrossOrders.cpp"/>
     <File Name="tests/TestWAMP.cpp"/>
+    <File Name="tests/TestWAMPAPI.cpp"/>
   </VirtualDirectory>
   <Dependencies Name="Debug"/>
   <Dependencies Name="Release"/>
@@ -68,10 +77,9 @@
         <IncludePath Value="/home/mnuck/autobahn"/>
         <IncludePath Value="/home/mnuck/boost_1_58_0"/>
       </Compiler>
-      <Linker Options="" Required="yes">
+      <Linker Options="-pthread" Required="yes">
         <LibraryPath Value="/home/mnuck/boost_1_58_0/stage/lib"/>
         <Library Value="libUnitTest++.a"/>
-        <Library Value="libpthread"/>
         <Library Value="libboost_log"/>
         <Library Value="libboost_log_setup"/>
         <Library Value="libboost_thread"/>
@@ -103,7 +111,7 @@
         <CustomPostBuild/>
         <CustomPreBuild/>
       </AdditionalRules>
-      <Completion EnableCpp11="no" EnableCpp14="no">
+      <Completion EnableCpp11="yes" EnableCpp14="no">
         <ClangCmpFlagsC/>
         <ClangCmpFlags/>
         <ClangPP/>

@@ -1,10 +1,7 @@
 #ifndef WAMPAPI_H
 #define WAMPAPI_H
 
-#include <stdint.h>
-
 #include <autobahn/autobahn.hpp>
-#include <boost/asio.hpp>
 #include <boost/thread.hpp>
 
 #include "BroadcastObserver.h"
@@ -12,55 +9,95 @@
 #include "Market.h"
 #include "Order.h"
 #include "Participant.h"
+#include "WorkQueue.hpp"
+#include "WAMPEndpoint.h"
 
-class WAMPAPI : public BroadcastObserver
+
+class WAMPAPI:
+    public BroadcastObserver
 {
 public:
-    WAMPAPI(Book::Book& book);
-    ~WAMPAPI();
+    enum class Endpoint
+    {
+        GET_ID,
+        ORDER_OPEN,
+        ORDER_CLOSE,
+        MARKET_OPEN,
+        MARKET_CLOSE,
+        MARKET_ORDERS,
+        MARKET_INDEX,
+        PARTICIPANT_OPEN,
+        PARTICIPANT_CLOSE,
+        PARTICIPANT_ORDERS,
+        PARTICIPANT_GET
+    };
 
-    virtual void OnBroadcast(const Book::Order& order);
+    WAMPAPI();
+    virtual ~WAMPAPI();
+    
+    void RegisterDelegate(std::weak_ptr<Book::Book> book);
+
     virtual void OnBroadcast(const Book::Market& market);
+    virtual void OnBroadcast(const Book::Order& order);
     virtual void OnBroadcast(const Book::Participant& participant);
-    
+
+    void EnqueRequest(WAMPAPI::Endpoint endpoint, 
+                      autobahn::wamp_invocation invocation);
+
+protected:
+    virtual void RegisterWAMPListeners();
+    void RequestRouter();
+
     void GetUniqueID(autobahn::wamp_invocation invocation);
-    
+
     void OpenOrder(autobahn::wamp_invocation invocation);
     void CloseOrder(autobahn::wamp_invocation invocation);
 
-    void GetMarkets(autobahn::wamp_invocation invocation);
     void OpenMarket(autobahn::wamp_invocation invocation);
     void CloseMarket(autobahn::wamp_invocation invocation);
-
-    void GetOrdersForParticipant(autobahn::wamp_invocation invocation);
     void GetOrdersForMarket(autobahn::wamp_invocation invocation);
+    void GetMarkets(autobahn::wamp_invocation invocation);
 
     void OpenParticipant(autobahn::wamp_invocation invocation);
     void CloseParticipant(autobahn::wamp_invocation invocation);
+    void GetOrdersForParticipant(autobahn::wamp_invocation invocation);
     void GetParticipant(autobahn::wamp_invocation invocation);
 
-protected:
-    void Connect();
-    void RegisterWAMPListeners();
-    
     template <typename T>
     void Broadcast(std::string topic, T args);
-
-    const std::string _feedTopic;
-    const std::string _realm;
-    const std::string _ipAddr;
-    const uint16_t    _ipPort;
     
-    Book::Book& _book;
+    std::shared_ptr<Book::Book> DerefBook();
 
-    bool _ready;
-    boost::thread _thread;
-    boost::asio::io_service _io;
-    std::shared_ptr<autobahn::wamp_session> _session;
-    std::shared_ptr<autobahn::wamp_tcp_transport> _transport;
+    struct NullDeleter
+    {
+        template <typename T>
+        void operator()(T*) {}
+    };
+
+    struct PQElement
+    {
+        bool operator()(const PQElement& lhs, const PQElement& rhs)
+        {
+            if (lhs.priority == rhs.priority)
+                return lhs.timestamp > rhs.timestamp;
+            return lhs.priority > rhs.priority;
+        }
+
+        unsigned int      priority;  // smaller is sooner
+        Book::UniqueID    timestamp; // smaller is sooner
+        WAMPAPI::Endpoint endpoint;
+        autobahn::wamp_invocation invocation;
+    };
+
+    using QueueType =
+        std::priority_queue<PQElement,
+                            std::vector<PQElement>,
+                            PQElement>;
     
-    boost::condition_variable _cvReady;
-    boost::mutex _cvm;
+    std::weak_ptr<Book::Book> _book;
+    WorkQueue<QueueType> _requestQueue;
+    boost::thread _requestRouterThread;
+    WAMPEndpoint _endpoint;
 };
 
 #include "WAMPAPI.hpp"

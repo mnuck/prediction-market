@@ -1,105 +1,45 @@
 #define BOOST_LOG_DYN_LINK 1
 
 #include <memory>
+#include <vector>
 
 #include "Logger.h"
+#include "Preferences.h"
 #include "WAMPAPI.h"
-#include "UniqueID.h"
 
-#include <boost/log/trivial.hpp>
-
-using namespace boost::asio;
-using boost::future;
-
-WAMPAPI::WAMPAPI(Book::Book& book):
-    _ipAddr("127.0.0.1"),
-    _ipPort(8090),
-    _book(book),
-    _ready(false),
-    _thread(&WAMPAPI::Connect, this)
+WAMPAPI::WAMPAPI():
+    _requestRouterThread(&WAMPAPI::RequestRouter, this)
 {
-    boost::unique_lock<boost::mutex> lock(_cvm);
-    while (!_ready)
-        _cvReady.wait(lock);
-        
-    _book.RegisterBroadcastObserver(std::shared_ptr<WAMPAPI>(this));
+    RegisterWAMPListeners();
 }
 
 WAMPAPI::~WAMPAPI()
 {
-    _io.stop();
-    if (_thread.joinable())
-    {
-        _thread.join();
-    }
+    _requestRouterThread.interrupt();
+    _requestRouterThread.join();
 }
 
-void WAMPAPI::Connect()
+std::shared_ptr<Book::Book> WAMPAPI::DerefBook()
 {
-    ScopeLog scopelog(__FUNCTION__);
-    bool debug = false;
-    _session = std::make_shared<autobahn::wamp_session>(_io, debug);
-
-    ip::tcp::endpoint endpoint(ip::address::from_string(_ipAddr), _ipPort);
-
-    _transport = std::make_shared<autobahn::wamp_tcp_transport>(
-        _io, endpoint, debug);
-
-    _transport->attach(
-        std::static_pointer_cast<autobahn::wamp_transport_handler>(_session));
-
-    future<void> connect_future;
-    future<void> start_future;
-    future<void> join_future;
-
-    try 
+    std::shared_ptr<Book::Book> pBook = _book.lock();
+    if (!pBook)
     {
-        connect_future = _transport->connect().then(
-            [&](future<void> connected) {
-                connected.get();
-            
-                LOG(trace) << "transport connected";
-            
-                start_future = _session->start().then(
-                    [&](future<void> started) {
-                        started.get();
-                    
-                        LOG(trace) << "session started";
-                    
-                        join_future = _session->join(_realm).then(
-                            [&](future<uint64_t> joined) {
-                            
-                                LOG(trace) << "joined realm: " 
-                                                         << joined.get();
-                            
-                                RegisterWAMPListeners();
-
-                                boost::lock_guard<boost::mutex> lock(_cvm);
-                                _ready = true;
-                                _cvReady.notify_all();
-                            });
-                    });
-            });
-
-    } 
-    catch (const std::exception& e)
-    {
-        LOG(error) << __FUNCTION__ 
-                   << " caught exception: "
-                   << e.what();
-        _io.stop();
-        return;
+        LOG(fatal) << "Lost contact with Book";
+//        throw "Lost contact with Book";
     }
-
-    LOG(trace) << "starting io service";
-    _io.run();
-    LOG(trace) << "stopped io service";
+    return pBook;
 }
 
+void WAMPAPI::RegisterDelegate(std::weak_ptr<Book::Book> book)
+{
+    _book = book;
+}
 
 void WAMPAPI::OnBroadcast(const Book::Order& order)
 {
-    auto topic = "com.nuckdev.prediction-market.order.feed";
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Order)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".order.feed";
     auto args = std::make_tuple
     (
         order.GetID(),
@@ -115,7 +55,9 @@ void WAMPAPI::OnBroadcast(const Book::Order& order)
 
 void WAMPAPI::OnBroadcast(const Book::Market& market)
 {
-    auto topic = "com.nuckdev.prediction-market.market.feed";
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Market)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".market.feed";
     auto args = std::make_tuple
     (
         market.GetID(),
@@ -128,7 +70,9 @@ void WAMPAPI::OnBroadcast(const Book::Market& market)
 
 void WAMPAPI::OnBroadcast(const Book::Participant& participant)
 {
-    auto topic = "com.nuckdev.prediction-market.participant.feed";
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Participant)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".participant.feed";
     auto args = std::make_tuple
     (
         participant.GetID(),
@@ -139,14 +83,123 @@ void WAMPAPI::OnBroadcast(const Book::Participant& participant)
     Broadcast(topic, args);
 }
 
+void WAMPAPI::RegisterWAMPListeners()
+{
+    ScopeLog scopelog(__FUNCTION__);
+
+    using std::make_tuple;
+    using ElementType = std::tuple< WAMPAPI::Endpoint, std::string>;
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    static const std::vector<ElementType> endpoints
+    {
+        make_tuple(Endpoint::GET_ID,             realm + ".id"),
+        make_tuple(Endpoint::ORDER_OPEN,         realm + ".order.open"),
+        make_tuple(Endpoint::ORDER_CLOSE,        realm + ".order.close"),
+        make_tuple(Endpoint::MARKET_OPEN,        realm + ".market.open"),
+        make_tuple(Endpoint::MARKET_CLOSE,       realm + ".market.close"),
+        make_tuple(Endpoint::MARKET_ORDERS,      realm + ".market.orders"),
+        make_tuple(Endpoint::MARKET_INDEX,       realm + ".market.index"),
+        make_tuple(Endpoint::PARTICIPANT_OPEN,   realm + ".participant.open"),
+        make_tuple(Endpoint::PARTICIPANT_CLOSE,  realm + ".participant.close"),
+        make_tuple(Endpoint::PARTICIPANT_ORDERS, realm + ".participant.orders"),
+        make_tuple(Endpoint::PARTICIPANT_GET,    realm + ".participant.get")
+    };
+
+    for (auto& endpoint : endpoints)
+    {
+        _endpoint.GetSession()->provide(
+            std::get<1>(endpoint),
+            std::bind(
+                &WAMPAPI::EnqueRequest,
+                this,
+                std::get<0>(endpoint),
+                std::placeholders::_1
+            )
+        );
+    }
+}
+
+void WAMPAPI::EnqueRequest(WAMPAPI::Endpoint endpoint, 
+                           autobahn::wamp_invocation invocation)
+{
+    auto pBook = DerefBook();
+    
+    PQElement e;
+    e.priority   = 1000;
+    e.timestamp  = pBook->GetTimestamp();
+    e.endpoint   = endpoint;
+    e.invocation = invocation;
+    
+    if (endpoint == Endpoint::MARKET_CLOSE)
+        e.priority = 0;
+
+    _requestQueue.Push(e);
+}
+
+void WAMPAPI::RequestRouter()
+{
+    ScopeLog scopeLog("WAMPAPI::RequestRouter");
+    try
+    {
+        while (true)
+        {
+            PQElement e = _requestQueue.Pop();
+            switch (e.endpoint)
+            {
+            case Endpoint::GET_ID:
+                GetUniqueID(e.invocation);
+                break;
+            case Endpoint::ORDER_OPEN:
+                OpenOrder(e.invocation);
+                break;
+            case Endpoint::ORDER_CLOSE:
+                CloseOrder(e.invocation);
+                break;
+            case Endpoint::MARKET_OPEN:
+                OpenMarket(e.invocation);
+                break;
+            case Endpoint::MARKET_CLOSE:
+                CloseMarket(e.invocation);
+                break;
+            case Endpoint::MARKET_ORDERS:
+                GetOrdersForMarket(e.invocation);
+                break;
+            case Endpoint::MARKET_INDEX:
+                GetMarkets(e.invocation);
+                break;
+            case Endpoint::PARTICIPANT_OPEN:
+                OpenParticipant(e.invocation);
+                break;
+            case Endpoint::PARTICIPANT_CLOSE:
+                CloseParticipant(e.invocation);
+                break;
+            case Endpoint::PARTICIPANT_ORDERS:
+                GetOrdersForParticipant(e.invocation);
+                break;
+            case Endpoint::PARTICIPANT_GET:
+                GetParticipant(e.invocation);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    catch (boost::thread_interrupted const&)
+    {
+        LOG(trace) << "WAMPAPI::RequestRouter shutting down";
+    }
+}
 
 void WAMPAPI::GetUniqueID(autobahn::wamp_invocation invocation)
 {
-    invocation->result(_book.GetUniqueID());
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    invocation->result(pBook->GetUniqueID());
 }
     
 void WAMPAPI::OpenOrder(autobahn::wamp_invocation invocation)
 {
+    ScopeLog scopeLog(__FUNCTION__);
     Book::UniqueID orderID;
     Book::UniqueID participantID;
     Book::UniqueID marketID;
@@ -154,90 +207,49 @@ void WAMPAPI::OpenOrder(autobahn::wamp_invocation invocation)
     unsigned int quantity;
     unsigned int price;
     invocation->get_each_argument(orderID, participantID, marketID, uiDirection, quantity, price);
-    
-    
 }
 
 void WAMPAPI::CloseOrder(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);
 }
 
 void WAMPAPI::GetOrdersForMarket(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);
 }
 
 void WAMPAPI::GetOrdersForParticipant(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);
 }
 
 void WAMPAPI::OpenMarket(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);   
 }
 
 void WAMPAPI::CloseMarket(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);    
 }
 
 void WAMPAPI::GetMarkets(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);    
 }
 
 void WAMPAPI::OpenParticipant(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);    
 }
 
 void WAMPAPI::CloseParticipant(autobahn::wamp_invocation invocation)
 {
-    
+    ScopeLog scopeLog(__FUNCTION__);    
 }
 
 void WAMPAPI::GetParticipant(autobahn::wamp_invocation invocation)
 {
-    
-}
-
-void WAMPAPI::RegisterWAMPListeners()
-{
-    ScopeLog scopelog(__FUNCTION__);
-    namespace ph = std::placeholders;
-    _session->provide(std::string("com.nuckdev.prediction-market.id"),
-                      std::bind(&WAMPAPI::GetUniqueID, this, ph::_1)).get();
-
-
-    _session->provide(std::string("com.nuckdev.prediction-market.order.open"),
-                      std::bind(&WAMPAPI::OpenOrder, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.order.close"),
-                      std::bind(&WAMPAPI::CloseOrder, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.market.open"),
-                      std::bind(&WAMPAPI::OpenMarket, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.market.close"),
-                      std::bind(&WAMPAPI::CloseMarket, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.market.orders"),
-                      std::bind(&WAMPAPI::GetOrdersForMarket, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.participant.orders"),
-                      std::bind(&WAMPAPI::GetOrdersForParticipant, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.market.index"),
-                      std::bind(&WAMPAPI::GetMarkets, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.participant.open"),
-                      std::bind(&WAMPAPI::OpenParticipant, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.participant.close"),
-                      std::bind(&WAMPAPI::CloseParticipant, this, ph::_1)).get();
-
-    _session->provide(std::string("com.nuckdev.prediction-market.participant.get"),
-                      std::bind(&WAMPAPI::GetOrdersForParticipant, this, ph::_1)).get();
+    ScopeLog scopeLog(__FUNCTION__);    
 }
