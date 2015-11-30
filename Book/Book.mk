@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Matthew Nuckolls
-Date                   :=27/11/15
+Date                   :=29/11/15
 CodeLitePath           :="/home/mnuck/.codelite"
 LinkerName             :=/usr/bin/g++
 SharedObjectLinkerName :=/usr/bin/g++ -shared -fPIC
@@ -39,8 +39,8 @@ LinkOptions            :=  -pthread
 IncludePath            :=  $(IncludeSwitch). $(IncludeSwitch). $(IncludeSwitch)/home/mnuck/autobahn $(IncludeSwitch)/home/mnuck/boost_1_58_0 
 IncludePCH             := 
 RcIncludePath          := 
-Libs                   := $(LibrarySwitch)UnitTest++ $(LibrarySwitch)boost_log $(LibrarySwitch)boost_log_setup $(LibrarySwitch)boost_thread $(LibrarySwitch)boost_system 
-ArLibs                 :=  "libUnitTest++.a" "libboost_log" "libboost_log_setup" "libboost_thread" "libboost_system" 
+Libs                   := $(LibrarySwitch)UnitTest++ $(LibrarySwitch)boost_log $(LibrarySwitch)boost_log_setup $(LibrarySwitch)boost_thread $(LibrarySwitch)boost_system $(LibrarySwitch)boost_filesystem 
+ArLibs                 :=  "libUnitTest++.a" "libboost_log" "libboost_log_setup" "libboost_thread" "libboost_system" "libboost_filesystem" 
 LibPath                := $(LibraryPathSwitch). $(LibraryPathSwitch)/home/mnuck/boost_1_58_0/stage/lib 
 
 ##
