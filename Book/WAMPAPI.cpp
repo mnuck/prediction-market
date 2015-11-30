@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include "msgpack.hpp"
+
 #include "Logger.h"
 #include "Preferences.h"
 #include "WAMPAPI.h"
@@ -40,17 +42,23 @@ void WAMPAPI::OnBroadcast(const Book::Order& order)
     ScopeLog scopelog("WAMPAPI::OnBroadcast(Order)");
     auto realm = prefs.Get("WAMP.Realm", std::string("default"));
     auto topic = realm + ".order.feed";
-    auto args = std::make_tuple
-    (
-        order.GetID(),
-        order.GetMarketID(),
-        order.GetStatusString(),
-        order.GetDirectionString(),
-        order.GetQuantity(),
-        order.GetPrice()
-    );
 
-    Broadcast(topic, args);
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    pk.pack_array(7);
+    pk.pack(order.GetID());
+    pk.pack(order.GetMarketID());
+    pk.pack(order.GetParticipantID());
+    pk.pack(static_cast<unsigned int>(order.GetStatus()));
+    pk.pack(static_cast<unsigned int>(order.GetDirection()));
+    pk.pack(order.GetQuantity());
+    pk.pack(order.GetPrice());
+
+    msgpack::unpacked msg;
+    msgpack::unpack(&msg, buffer.data(), buffer.size());
+
+    Broadcast(topic, msg.get());
 }
 
 void WAMPAPI::OnBroadcast(const Book::Market& market)
@@ -58,14 +66,19 @@ void WAMPAPI::OnBroadcast(const Book::Market& market)
     ScopeLog scopelog("WAMPAPI::OnBroadcast(Market)");
     auto realm = prefs.Get("WAMP.Realm", std::string("default"));
     auto topic = realm + ".market.feed";
-    auto args = std::make_tuple
-    (
-        market.GetID(),
-        market.GetStatusString(),
-        market.GetOutcomeString()
-    );
 
-    Broadcast(topic, args);
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    pk.pack_array(3);
+    pk.pack(market.GetID());
+    pk.pack(static_cast<unsigned int>(market.GetStatus()));
+    pk.pack(static_cast<unsigned int>(market.GetOutcome()));
+
+    msgpack::unpacked msg;
+    msgpack::unpack(&msg, buffer.data(), buffer.size());
+
+    Broadcast(topic, msg.get());
 }
 
 void WAMPAPI::OnBroadcast(const Book::Participant& participant)
@@ -73,14 +86,19 @@ void WAMPAPI::OnBroadcast(const Book::Participant& participant)
     ScopeLog scopelog("WAMPAPI::OnBroadcast(Participant)");
     auto realm = prefs.Get("WAMP.Realm", std::string("default"));
     auto topic = realm + ".participant.feed";
-    auto args = std::make_tuple
-    (
-        participant.GetID(),
-        participant.GetStatusString(),
-        participant.GetBalance()
-    );
 
-    Broadcast(topic, args);
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    pk.pack_array(3);
+    pk.pack(participant.GetID());
+    pk.pack(static_cast<unsigned int>(participant.GetStatus()));
+    pk.pack(participant.GetBalance());
+
+    msgpack::unpacked msg;
+    msgpack::unpack(&msg, buffer.data(), buffer.size());
+
+    Broadcast(topic, msg.get());
 }
 
 void WAMPAPI::RegisterWAMPListeners()
