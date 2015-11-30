@@ -7,6 +7,8 @@
 #include "Preferences.h"
 #include "WAMPAPI.h"
 
+using msgpacker = msgpack::packer<msgpack::sbuffer>;
+
 WAMPAPI::WAMPAPI():
     _requestRouterThread(&WAMPAPI::RequestRouter, this)
 {
@@ -30,73 +32,22 @@ std::shared_ptr<Book::Book> WAMPAPI::DerefBook()
     return pBook;
 }
 
+
+msgpack::object WAMPAPI::BuildMsgPackObject(std::function<void (msgpacker&)> f)
+{
+    msgpack::sbuffer buffer;
+    msgpack::packer<msgpack::sbuffer> pk(&buffer);
+
+    f(pk);
+
+    msgpack::unpacked msg;
+    msgpack::unpack(&msg, buffer.data(), buffer.size());
+    return msg.get();
+}
+
 void WAMPAPI::RegisterDelegate(std::weak_ptr<Book::Book> book)
 {
     _book = book;
-}
-
-void WAMPAPI::OnBroadcast(const Book::Order& order)
-{
-    ScopeLog scopelog("WAMPAPI::OnBroadcast(Order)");
-    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
-    auto topic = realm + ".order.feed";
-
-    msgpack::sbuffer buffer;
-    msgpack::packer<msgpack::sbuffer> pk(&buffer);
-
-    pk.pack_array(7);
-    pk.pack(order.GetID());
-    pk.pack(order.GetMarketID());
-    pk.pack(order.GetParticipantID());
-    pk.pack(static_cast<unsigned int>(order.GetStatus()));
-    pk.pack(static_cast<unsigned int>(order.GetDirection()));
-    pk.pack(order.GetQuantity());
-    pk.pack(order.GetPrice());
-
-    msgpack::unpacked msg;
-    msgpack::unpack(&msg, buffer.data(), buffer.size());
-
-    Broadcast(topic, msg.get());
-}
-
-void WAMPAPI::OnBroadcast(const Book::Market& market)
-{
-    ScopeLog scopelog("WAMPAPI::OnBroadcast(Market)");
-    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
-    auto topic = realm + ".market.feed";
-
-    msgpack::sbuffer buffer;
-    msgpack::packer<msgpack::sbuffer> pk(&buffer);
-
-    pk.pack_array(3);
-    pk.pack(market.GetID());
-    pk.pack(static_cast<unsigned int>(market.GetStatus()));
-    pk.pack(static_cast<unsigned int>(market.GetOutcome()));
-
-    msgpack::unpacked msg;
-    msgpack::unpack(&msg, buffer.data(), buffer.size());
-
-    Broadcast(topic, msg.get());
-}
-
-void WAMPAPI::OnBroadcast(const Book::Participant& participant)
-{
-    ScopeLog scopelog("WAMPAPI::OnBroadcast(Participant)");
-    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
-    auto topic = realm + ".participant.feed";
-
-    msgpack::sbuffer buffer;
-    msgpack::packer<msgpack::sbuffer> pk(&buffer);
-
-    pk.pack_array(3);
-    pk.pack(participant.GetID());
-    pk.pack(static_cast<unsigned int>(participant.GetStatus()));
-    pk.pack(participant.GetBalance());
-
-    msgpack::unpacked msg;
-    msgpack::unpack(&msg, buffer.data(), buffer.size());
-
-    Broadcast(topic, msg.get());
 }
 
 void WAMPAPI::RegisterWAMPListeners()
@@ -204,6 +155,58 @@ void WAMPAPI::RequestRouter()
     {
         LOG(trace) << "WAMPAPI::RequestRouter shutting down";
     }
+}
+
+void WAMPAPI::OnBroadcast(const Book::Order& order)
+{
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Order)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".order.feed";
+
+    Broadcast(
+        topic,
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(7);
+            pk.pack(order.GetID());
+            pk.pack(order.GetMarketID());
+            pk.pack(order.GetParticipantID());
+            pk.pack(static_cast<unsigned int>(order.GetStatus()));
+            pk.pack(static_cast<unsigned int>(order.GetDirection()));
+            pk.pack(order.GetQuantity());
+            pk.pack(order.GetPrice());
+    }));
+}
+
+void WAMPAPI::OnBroadcast(const Book::Market& market)
+{
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Market)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".market.feed";
+
+    Broadcast(
+        topic,
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(3);
+            pk.pack(market.GetID());
+            pk.pack(static_cast<unsigned int>(market.GetStatus()));
+            pk.pack(static_cast<unsigned int>(market.GetOutcome()));
+    }));
+}
+
+void WAMPAPI::OnBroadcast(const Book::Participant& participant)
+{
+    ScopeLog scopelog("WAMPAPI::OnBroadcast(Participant)");
+    auto realm = prefs.Get("WAMP.Realm", std::string("default"));
+    auto topic = realm + ".participant.feed";
+
+    Broadcast(
+        topic,
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(3);
+            pk.pack(participant.GetID());
+            pk.pack(static_cast<unsigned int>(participant.GetStatus()));
+            pk.pack(participant.GetBalance());
+    }));
 }
 
 void WAMPAPI::GetUniqueID(autobahn::wamp_invocation invocation)

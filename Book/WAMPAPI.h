@@ -1,8 +1,11 @@
 #ifndef WAMPAPI_H
 #define WAMPAPI_H
 
+#include <functional>
+
 #include <autobahn/autobahn.hpp>
 #include <boost/thread.hpp>
+#include <msgpack.hpp>
 
 #include "BroadcastObserver.h"
 #include "Book.h"
@@ -66,6 +69,10 @@ protected:
     template <typename T>
     void Broadcast(std::string topic, T args);
     
+    
+    msgpack::object BuildMsgPackObject(
+        std::function<void (msgpack::packer<msgpack::sbuffer>&)> f);
+
     std::shared_ptr<Book::Book> DerefBook();
 
     struct NullDeleter
