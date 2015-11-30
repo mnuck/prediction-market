@@ -23,20 +23,20 @@ public:
     UniqueID GetUniqueID();
     UniqueID GetTimestamp();
 
-    Order::Status OpenOrder(const Order& order);
-    Order::Status CloseOrder(const UniqueID& orderID);
+    Order::Response OpenOrder(const Order& order);
+    Order::Response CloseOrder(const UniqueID& orderID);
 
     std::vector<Market> GetMarkets() const;
-    Market::Status OpenMarket(const Market& market);
-    Market::Status CloseMarket(
+    Market::Response OpenMarket(const Market& market);
+    Market::Response CloseMarket(
         const UniqueID& marketID,
         const Market::Outcome& outcome);
 
     std::vector<Order> GetOrders(const Participant& participant) const;
     std::vector<Order> GetOrders(const Market& market) const;
 
-    Participant::Status OpenParticipant(const Participant& participant);
-    Participant::Status CloseParticipant(const UniqueID& participantID);
+    Participant::Response OpenParticipant(const Participant& participant);
+    Participant::Response CloseParticipant(const UniqueID& participantID);
     const Participant&  GetParticipant(const UniqueID& participantID) const;
 
 private:

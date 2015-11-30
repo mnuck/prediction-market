@@ -56,8 +56,8 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(50);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
 
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -96,8 +96,8 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(50);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
 
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -144,9 +144,9 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(40);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order3));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order3));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -202,9 +202,9 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(40);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order3));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order3));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -261,9 +261,9 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(40);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order3));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order3));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -320,9 +320,9 @@ SUITE(CrossOrders)
               .SetQuantity(1)
               .SetPrice(40);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order3));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order3));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -378,9 +378,9 @@ SUITE(CrossOrders)
               .SetQuantity(5)
               .SetPrice(30);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order3));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order3));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());

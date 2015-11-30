@@ -51,9 +51,9 @@ SUITE(MarketClose)
               .SetQuantity(1)
               .SetPrice(90);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Market::Status::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::TRUE));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Market::Response::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::TRUE));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -92,9 +92,9 @@ SUITE(MarketClose)
               .SetQuantity(1)
               .SetPrice(90);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Market::Status::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::FALSE));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Market::Response::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::FALSE));
         
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -133,9 +133,9 @@ SUITE(MarketClose)
               .SetQuantity(1)
               .SetPrice(50);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Market::Status::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::TRUE));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Market::Response::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::TRUE));
 
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());
@@ -174,9 +174,9 @@ SUITE(MarketClose)
               .SetQuantity(1)
               .SetPrice(50);
 
-        CHECK(Order::Status::OPENED == b.OpenOrder(order1));
-        CHECK(Order::Status::OPENED == b.OpenOrder(order2));
-        CHECK(Market::Status::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::FALSE));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order1));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order2));
+        CHECK(Market::Response::CLOSED == b.CloseMarket(m.GetID(), Market::Outcome::FALSE));
 
         const auto& p1r = b.GetParticipant(p1.GetID());
         const auto& p1ms = p1r.GetMarketStats(m.GetID());

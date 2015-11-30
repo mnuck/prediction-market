@@ -37,7 +37,7 @@ SUITE(OrderOpenAndClose)
              .SetQuantity(1)
              .SetPrice(50);
          
-        CHECK(Order::Status::OPENED == b.OpenOrder(order));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order));
         const auto& p2 = b.GetParticipant(p.GetID());
         const auto& p2ms = p2.GetMarketStats(m.GetID());
         
@@ -58,7 +58,7 @@ SUITE(OrderOpenAndClose)
              .SetQuantity(1)
              .SetPrice(50);
          
-        CHECK(Order::Status::OPENED == b.OpenOrder(order));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order));
         const auto& p2 = b.GetParticipant(p.GetID());
         const auto& p2ms = p2.GetMarketStats(m.GetID());
 
@@ -79,8 +79,8 @@ SUITE(OrderOpenAndClose)
              .SetQuantity(1)
              .SetPrice(50);
         
-        CHECK(Order::Status::OPENED == b.OpenOrder(order));
-        CHECK(Order::Status::CLOSED == b.CloseOrder(order.GetID()));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order));
+        CHECK(Order::Response::CLOSED == b.CloseOrder(order.GetID()));
         
         const auto& p2 = b.GetParticipant(p.GetID());
         const auto& p2ms = p2.GetMarketStats(m.GetID());
@@ -102,8 +102,8 @@ SUITE(OrderOpenAndClose)
              .SetQuantity(1)
              .SetPrice(50);
      
-        CHECK(Order::Status::OPENED == b.OpenOrder(order));
-        CHECK(Order::Status::CLOSED == b.CloseOrder(order.GetID()));
+        CHECK(Order::Response::OPENED == b.OpenOrder(order));
+        CHECK(Order::Response::CLOSED == b.CloseOrder(order.GetID()));
 
         const auto& p2 = b.GetParticipant(p.GetID());
         const auto& p2ms = p2.GetMarketStats(m.GetID());

@@ -30,6 +30,6 @@ SUITE(WAMP_API)
     TEST_FIXTURE(WAMPFixture, WAMPLoads)
     {
         p.SetBalance(10000);
-        CHECK(book->OpenParticipant(p) == Participant::Status::OPENED);
+        CHECK(book->OpenParticipant(p) == Participant::Response::OPENED);
     }
 }

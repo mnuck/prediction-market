@@ -14,23 +14,30 @@ namespace Book
 class Market
 {
 public:
-    enum class Status
+    enum class Response
     {
+        UNINITIALIZED = 0,
         OPENED,
         CLOSED,
         DUPLICATE,
         NO_SUCH_MARKET,
-        UNINITIALIZED,
         INVALID_OUTCOME
     };
-    
+
+    enum class Status
+    {
+        UNINITIALIZED = 0,
+        OPENED,
+        CLOSED
+    };
+
     enum class Outcome
     {
+        UNKNOWN = 0,
         TRUE,
-        FALSE,
-        UNKNOWN
+        FALSE
     };
-    
+
     friend class Book;
 
     Market();
@@ -53,9 +60,9 @@ private:
     UniqueID        _id;
     Market::Status  _status;
     Market::Outcome _outcome;
-    
+
     std::set<UniqueID> _orders;
-    
+
     std::priority_queue<Order, std::vector<Order>, Order::CompareBuys>  _buyOrders;
     std::priority_queue<Order, std::vector<Order>, Order::CompareSells> _sellOrders;
 };

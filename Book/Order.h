@@ -13,23 +13,33 @@ class Order
 public:
     static const unsigned int _value = 100;
 
-    enum class Status
+    enum class Response
     {
+        UNINITIALIZED = 0,
         OPENED,
         CLOSED,
         PARTIAL_FILLED,
         FILLED,
         DUPLICATE,
         NO_SUCH_ORDER,
-        UNINITIALIZED,
         INVALID_QUANTITY,
         INVALID_MARKET,
         INVALID_PARTICIPANT,
         INSUFFICIENT_BALANCE
     };
-    
+
+    enum class Status
+    {
+        UNINITIALIZED = 0,
+        OPENED,
+        CLOSED,
+        PARTIAL_FILLED,
+        FILLED
+    };
+
     enum class Direction
     {
+        UNINITIALIZED = 0,
         BUY,
         SELL
     };

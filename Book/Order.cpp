@@ -158,26 +158,6 @@ const std::string Order::GetStatusString() const
     case Status::FILLED:
         return "Filled";
         break;
-    case Status::DUPLICATE:
-        return "Duplicate";
-        break;
-    case Status::NO_SUCH_ORDER:
-        return "No Such Order";
-        break;
-    case Status::UNINITIALIZED:
-        return "Uninitialized";
-        break;
-    case Status::INVALID_QUANTITY:
-        return "Invalid Outcome";
-        break;
-    case Status::INVALID_MARKET:
-        return "Invalid Market";
-        break;
-    case Status::INVALID_PARTICIPANT:
-        return "Invalid Participant";
-        break;
-    case Status::INSUFFICIENT_BALANCE:
-        return "Insufficient Balance";
     default:
         return "Undefined Order Status";
         break;

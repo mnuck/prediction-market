@@ -14,16 +14,23 @@ namespace Book
 
 class Participant
 {
-public:    
-    enum class Status
+public:
+    enum class Response
     {
+        UNINITIALIZED = 0,
         OPENED,
         CLOSED,
         DUPLICATE,
         NO_SUCH_PARTICIPANT,
-        UNINITIALIZED,
         INVALID_ESCROW,
         CAN_NOT_CLOSE
+    };
+
+    enum class Status
+    {
+        UNINITIALIZED = 0,
+        OPENED,
+        CLOSED
     };
 
     struct MarketStats
@@ -62,11 +69,10 @@ private:
     unsigned int        _createEscrow;
     
     std::set<UniqueID> _orders;
-    
     std::map<UniqueID, MarketStats> _marketStats;
-    
     static const MarketStats _dummyMarketStats;
 };
 
 }
+
 #endif // PARTICIPANT_H

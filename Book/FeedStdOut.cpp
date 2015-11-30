@@ -25,9 +25,6 @@ void FeedStdOut::OnBroadcast(const Order& order)
     case Order::Status::CLOSED:
         sStatus = "CLOSED";
         break;
-    case Order::Status::DUPLICATE:
-        sStatus = "DUPLICATE";
-        break;
     case Order::Status::FILLED:
         sStatus = "FILLED";
         break;
@@ -83,9 +80,6 @@ void FeedStdOut::OnBroadcast(const Market& market)
         break;
     case Market::Status::CLOSED:
         status = "CLOSED";
-        break;
-    case Market::Status::DUPLICATE:
-        status = "DUPLICATE";
         break;
     default:
         status = "BROKEN";

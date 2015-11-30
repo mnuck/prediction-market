@@ -22,7 +22,7 @@ SUITE(ParticipantOpen)
     TEST_FIXTURE(BookFixture, OpenParticipant)
     {
         p.SetBalance(10000);
-        CHECK(b.OpenParticipant(p) == Participant::Status::OPENED);
+        CHECK(b.OpenParticipant(p) == Participant::Response::OPENED);
     }
 }
 

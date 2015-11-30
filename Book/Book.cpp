@@ -31,20 +31,20 @@ UniqueID Book::GetPrivateTimestamp()
     return ++_privateTimestamp;
 }
 
-Order::Status Book::OpenOrder(const Order& order)
+Order::Response Book::OpenOrder(const Order& order)
 {
     if (_orders.find(order._id) != _orders.end())
-        return Order::Status::DUPLICATE;
+        return Order::Response::DUPLICATE;
 
     if (order._quantity == 0)
-        return Order::Status::INVALID_QUANTITY;
+        return Order::Response::INVALID_QUANTITY;
 
     auto partIter = _participants.find(order._participantID);
     if (partIter == _participants.end())
-        return Order::Status::INVALID_PARTICIPANT;
+        return Order::Response::INVALID_PARTICIPANT;
 
     if (_markets.find(order._marketID) == _markets.end())
-        return Order::Status::INVALID_MARKET;
+        return Order::Response::INVALID_MARKET;
 
     auto& participant = partIter->second;
     auto& marketStats = participant._marketStats[order._marketID];
@@ -53,7 +53,7 @@ Order::Status Book::OpenOrder(const Order& order)
     {
         unsigned int buyEscrow = order._quantity * order._price;
         if (participant._balance < buyEscrow)
-            return Order::Status::INSUFFICIENT_BALANCE;
+            return Order::Response::INSUFFICIENT_BALANCE;
 
         participant._balance   -= buyEscrow;
         participant._buyEscrow += buyEscrow;
@@ -66,7 +66,7 @@ Order::Status Book::OpenOrder(const Order& order)
         {
             unsigned int sellEscrow = order._quantity * order._value;
             if (participant._balance < sellEscrow)
-                return Order::Status::INSUFFICIENT_BALANCE;
+                return Order::Response::INSUFFICIENT_BALANCE;
 
             participant._balance    -= sellEscrow;
             participant._createEscrow += sellEscrow;
@@ -83,14 +83,14 @@ Order::Status Book::OpenOrder(const Order& order)
 
     Broadcast(newOrder);
     FullfillOrder(newOrder);
-    return Order::Status::OPENED;
+    return Order::Response::OPENED;
 }
 
-Order::Status Book::CloseOrder(const UniqueID& oID)
+Order::Response Book::CloseOrder(const UniqueID& oID)
 {
     auto oIter = _orders.find(oID);
     if (oIter == _orders.end())
-        return Order::Status::NO_SUCH_ORDER;
+        return Order::Response::NO_SUCH_ORDER;
     
     auto& order = oIter->second;
     auto& participant = _participants.at(order._participantID);
@@ -125,7 +125,7 @@ Order::Status Book::CloseOrder(const UniqueID& oID)
     result._status = Order::Status::CLOSED;
     
     Broadcast(result);
-    return Order::Status::CLOSED;
+    return Order::Response::CLOSED;
 }
 
 void Book::FullfillOrder(Order& order)
@@ -269,11 +269,11 @@ std::vector<Market> Book::GetMarkets() const
     return result;
 }
 
-Market::Status Book::OpenMarket(const Market& market)
+Market::Response Book::OpenMarket(const Market& market)
 {
     UniqueID marketID = market._id;
     if (_markets.find(marketID) != _markets.end())
-        return Market::Status::DUPLICATE;
+        return Market::Response::DUPLICATE;
     
     Market& newMarket = _markets[marketID];
     newMarket = market;
@@ -281,19 +281,19 @@ Market::Status Book::OpenMarket(const Market& market)
     newMarket._status = Market::Status::OPENED;
 
     Broadcast(newMarket);
-    return Market::Status::OPENED;
+    return Market::Response::OPENED;
 }
 
-Market::Status Book::CloseMarket(
+Market::Response Book::CloseMarket(
     const UniqueID& marketID,
     const Market::Outcome& outcome)
 {
     auto marketIter = _markets.find(marketID);
     if (marketIter == _markets.end())
-        return Market::Status::NO_SUCH_MARKET;
+        return Market::Response::NO_SUCH_MARKET;
 
     if (outcome == Market::Outcome::UNKNOWN)
-        return Market::Status::INVALID_OUTCOME;
+        return Market::Response::INVALID_OUTCOME;
 
     for (const auto& oid : _orders)
     {
@@ -333,7 +333,7 @@ Market::Status Book::CloseMarket(
     result._status = Market::Status::CLOSED;
     result._outcome = outcome;
     Broadcast(result);
-    return Market::Status::CLOSED;    
+    return Market::Response::CLOSED;
 }
 
 std::vector<Order> Book::GetOrders(const Participant& participant) const
@@ -364,40 +364,40 @@ std::vector<Order> Book::GetOrders(const Market& market) const
     return result;
 }
 
-Participant::Status Book::OpenParticipant(const Participant& participant)
+Participant::Response Book::OpenParticipant(const Participant& participant)
 {
     UniqueID participantID = participant._id;
     
     if (_participants.find(participantID) != _participants.end())
-        return Participant::Status::DUPLICATE;
+        return Participant::Response::DUPLICATE;
 
     if (participant._buyEscrow != 0)
-        return Participant::Status::INVALID_ESCROW;
+        return Participant::Response::INVALID_ESCROW;
 
     Participant& newParticipant = _participants[participantID];
     newParticipant = participant;
 
     newParticipant._status = Participant::Status::OPENED;
     Broadcast(newParticipant);
-    return Participant::Status::OPENED;
+    return Participant::Response::OPENED;
 }
 
-Participant::Status Book::CloseParticipant(const UniqueID& participantID)
+Participant::Response Book::CloseParticipant(const UniqueID& participantID)
 {
     auto participantIter = _participants.find(participantID);
     if (participantIter == _participants.end())
-        return Participant::Status::NO_SUCH_PARTICIPANT;
+        return Participant::Response::NO_SUCH_PARTICIPANT;
         
     Participant& participant = participantIter->second;
 
     if (participant._buyEscrow != 0)
-        return Participant::Status::CAN_NOT_CLOSE;
+        return Participant::Response::CAN_NOT_CLOSE;
 
     if (participant._createEscrow != 0)
-        return Participant::Status::CAN_NOT_CLOSE;
+        return Participant::Response::CAN_NOT_CLOSE;
 
     if (!participant._marketStats.empty())
-        return Participant::Status::CAN_NOT_CLOSE;
+        return Participant::Response::CAN_NOT_CLOSE;
 
     for (const auto& oid : participantIter->second._orders)
     {
@@ -409,7 +409,7 @@ Participant::Status Book::CloseParticipant(const UniqueID& participantID)
     result._status = Participant::Status::CLOSED;
 
     Broadcast(result);
-    return Participant::Status::CLOSED;    
+    return Participant::Response::CLOSED;
 }
 
 const Participant& Book::GetParticipant(const UniqueID& participantID) const
