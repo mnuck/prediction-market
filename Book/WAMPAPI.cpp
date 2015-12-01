@@ -213,62 +213,210 @@ void WAMPAPI::GetUniqueID(autobahn::wamp_invocation invocation)
 {
     ScopeLog scopeLog(__FUNCTION__);
     auto pBook = DerefBook();
-    invocation->result(pBook->GetUniqueID());
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->GetUniqueID()));
+    }));
 }
     
 void WAMPAPI::OpenOrder(autobahn::wamp_invocation invocation)
 {
     ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
     Book::UniqueID orderID;
     Book::UniqueID participantID;
     Book::UniqueID marketID;
     unsigned int uiDirection;
     unsigned int quantity;
     unsigned int price;
-    invocation->get_each_argument(orderID, participantID, marketID, uiDirection, quantity, price);
+    invocation->get_each_argument(
+        orderID, participantID, marketID, uiDirection, quantity, price);
+    
+    Book::Order order(orderID);
+    order.SetParticipantID(participantID)
+         .SetMarketID(marketID)
+         .SetQuantity(quantity)
+         .SetPrice(price)
+         .SetDirection(
+            static_cast<Book::Order::Direction>(uiDirection));
+
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->OpenOrder(order)));
+    }));
 }
 
 void WAMPAPI::CloseOrder(autobahn::wamp_invocation invocation)
 {
     ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID orderID;
+    invocation->get_each_argument(orderID);
+
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->CloseOrder(orderID)));
+    }));
 }
 
 void WAMPAPI::GetOrdersForMarket(autobahn::wamp_invocation invocation)
 {
     ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID marketID;
+    invocation->get_each_argument(marketID);
+    Book::Market market(marketID);
+    
+    std::vector<Book::Order> result = pBook->GetOrders(market);
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(result.size());
+            for (const Book::Order& order : result)
+            {
+                pk.pack_array(7);
+                pk.pack(order.GetID());
+                pk.pack(order.GetMarketID());
+                pk.pack(order.GetParticipantID());
+                pk.pack(static_cast<unsigned int>(order.GetStatus()));
+                pk.pack(static_cast<unsigned int>(order.GetDirection()));
+                pk.pack(order.GetQuantity());
+                pk.pack(order.GetPrice());
+            }
+    }));
 }
 
 void WAMPAPI::GetOrdersForParticipant(autobahn::wamp_invocation invocation)
 {
     ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID participantID;
+    invocation->get_each_argument(participantID);
+    Book::Participant participant(participantID);
+    
+    std::vector<Book::Order> result = pBook->GetOrders(participant);
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(result.size());
+            for (const Book::Order& order : result)
+            {
+                pk.pack_array(7);
+                pk.pack(order.GetID());
+                pk.pack(order.GetMarketID());
+                pk.pack(order.GetParticipantID());
+                pk.pack(static_cast<unsigned int>(order.GetStatus()));
+                pk.pack(static_cast<unsigned int>(order.GetDirection()));
+                pk.pack(order.GetQuantity());
+                pk.pack(order.GetPrice());
+            }
+    }));
 }
 
 void WAMPAPI::OpenMarket(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);   
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID marketID;
+    invocation->get_each_argument(marketID);
+
+    Book::Market market(marketID);
+
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->OpenMarket(market)));
+    }));
 }
 
 void WAMPAPI::CloseMarket(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);    
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID marketID;
+    unsigned int uiOutcome;
+    invocation->get_each_argument(marketID, uiOutcome);
+
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->CloseMarket(
+                    marketID,
+                    static_cast<Book::Market::Outcome>(uiOutcome))));
+    }));
 }
 
 void WAMPAPI::GetMarkets(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);    
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    
+    std::vector<Book::Market> result = pBook->GetMarkets();
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(result.size());
+            for (const Book::Market& market : result)
+            {
+                pk.pack_array(3);
+                pk.pack(market.GetID());
+                pk.pack(static_cast<unsigned int>(market.GetStatus()));
+                pk.pack(static_cast<unsigned int>(market.GetOutcome()));
+            }
+    }));
 }
 
 void WAMPAPI::OpenParticipant(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);    
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID participantID;
+    unsigned int balance;
+    invocation->get_each_argument(participantID, balance);
+
+    Book::Participant participant(participantID);
+    participant.SetBalance(balance);
+    
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(1);
+            pk.pack(static_cast<unsigned int>(
+                pBook->OpenParticipant(participant)));
+    }));
 }
 
 void WAMPAPI::CloseParticipant(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);    
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID participantID;
+    invocation->get_each_argument(participantID);
+
+    auto result = static_cast<unsigned int>(pBook->CloseParticipant(participantID));
+    std::tuple<unsigned int> wireResult(result);
+    invocation->result(wireResult);
 }
 
 void WAMPAPI::GetParticipant(autobahn::wamp_invocation invocation)
 {
-    ScopeLog scopeLog(__FUNCTION__);    
+    ScopeLog scopeLog(__FUNCTION__);
+    auto pBook = DerefBook();
+    Book::UniqueID participantID;
+    invocation->get_each_argument(participantID);
+    const Book::Participant& participant = pBook->GetParticipant(participantID);
+    
+    invocation->result(
+        BuildMsgPackObject([&](msgpacker& pk) {
+            pk.pack_array(5);
+            pk.pack(participant.GetID());
+            pk.pack(static_cast<unsigned int>(participant.GetStatus()));
+            pk.pack(participant.GetBalance());
+            pk.pack(participant.GetBuyEscrow());
+            pk.pack(participant.GetCreateEscrow());
+    }));
 }
