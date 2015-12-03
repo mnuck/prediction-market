@@ -32,6 +32,5 @@ SUITE(WAMP_API)
     {
         p.SetBalance(10000);
         CHECK(book->OpenParticipant(p) == Participant::Response::OPENED);
-        boost::this_thread::sleep_for(boost::chrono::seconds(10));
     }
 }
