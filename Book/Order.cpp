@@ -142,40 +142,45 @@ Order& Order::SetDirection(const Order::Direction& direction)
     return *this;
 }
 
-const std::string Order::GetStatusString() const
+const std::vector<std::string>& Book::Order::GetResponseStrings()
 {
-    switch (_status)
+    static std::vector<std::string> result
     {
-    case Status::OPENED:
-        return "Opened";
-        break;
-    case Status::CLOSED:
-        return "Closed";
-        break;
-    case Status::PARTIAL_FILLED:
-        return "Partial Filled";
-        break;
-    case Status::FILLED:
-        return "Filled";
-        break;
-    default:
-        return "Undefined Order Status";
-        break;
-    }
+        "Uninitialized",
+        "Opened",
+        "Closed",
+        "Partially Filled",
+        "Filled",
+        "Duplicate",
+        "No Such Order",
+        "Invalid Quantity",
+        "Invalid Market",
+        "Invalid Participant",
+        "Insufficient Balance"
+    };
+    return result;
 }
 
-const std::string Order::GetDirectionString() const
+const std::vector<std::string>& Book::Order::GetStatusStrings()
 {
-    switch (_direction)
+    static std::vector<std::string> result
     {
-    case Direction::BUY:
-        return "Buy";
-        break;
-    case Direction::SELL:
-        return "Sell";
-        break;
-    default:
-        return "Undefined Order Direction";
-        break;
-    }
+        "Uninitialized",
+        "Opened",
+        "Closed",
+        "Partially Filled",
+        "Filled"
+    };
+    return result;
+}
+
+const std::vector<std::string>& Book::Order::GetDirectionStrings()
+{
+    static std::vector<std::string> result
+    {
+        "Uninitialized",
+        "Buy",
+        "Sell"
+    };
+    return result;
 }

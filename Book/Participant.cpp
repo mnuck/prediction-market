@@ -98,18 +98,28 @@ Participant& Participant::SetBalance(const unsigned int& balance)
     return *this;
 }
 
-const std::string Participant::GetStatusString() const
+const std::vector<std::string>& Book::Participant::GetResponseStrings()
 {
-    switch (_status)
+    static std::vector<std::string> result
     {
-    case Status::OPENED:
-        return "Opened";
-        break;
-    case Status::CLOSED:
-        return "Closed";
-        break;
-    default:
-        return "Undefined Participant Status";
-        break;
-    }
+        "Uninitialized",
+        "Opened",
+        "Closed",
+        "Duplicate",
+        "No Such Participant",
+        "Invalid Escrow",
+        "Can Not Close"
+    };
+    return result;
+}
+
+const std::vector<std::string>& Book::Participant::GetStatusStrings()
+{
+    static std::vector<std::string> result
+    {
+        "Uninitialized",
+        "Opened",
+        "Closed"
+    };
+    return result;
 }

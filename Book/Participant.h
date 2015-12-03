@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "Order.h"
 #include "Market.h"
@@ -25,6 +26,8 @@ public:
         INVALID_ESCROW,
         CAN_NOT_CLOSE
     };
+    
+    static const std::vector<std::string>& GetResponseStrings();
 
     enum class Status
     {
@@ -32,6 +35,7 @@ public:
         OPENED,
         CLOSED
     };
+    static const std::vector<std::string>& GetStatusStrings();
 
     struct MarketStats
     {
@@ -51,7 +55,6 @@ public:
 
     const UniqueID&            GetID() const;
     const Participant::Status& GetStatus() const;
-    const std::string          GetStatusString() const;
     const unsigned int&        GetBalance() const;
     const unsigned int         GetEscrow() const;
     const unsigned int&        GetBuyEscrow() const;

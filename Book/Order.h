@@ -2,6 +2,7 @@
 #define ORDER_H
 
 #include <string>
+#include <vector>
 
 #include "UniqueID.h"
 
@@ -27,6 +28,8 @@ public:
         INVALID_PARTICIPANT,
         INSUFFICIENT_BALANCE
     };
+    
+    static const std::vector<std::string>& GetResponseStrings();
 
     enum class Status
     {
@@ -36,6 +39,8 @@ public:
         PARTIAL_FILLED,
         FILLED
     };
+    
+    static const std::vector<std::string>& GetStatusStrings();
 
     enum class Direction
     {
@@ -43,6 +48,8 @@ public:
         BUY,
         SELL
     };
+    
+    static const std::vector<std::string>& GetDirectionStrings();
 
     class CompareSells
     {
@@ -67,13 +74,11 @@ public:
 
     const UniqueID&         GetID() const;
     const UniqueID&         GetParticipantID() const;
-    const UniqueID&         GetMarketID() const;    
+    const UniqueID&         GetMarketID() const;
     const Order::Status&    GetStatus() const;
-    const std::string       GetStatusString() const;
     const unsigned int&     GetQuantity() const;
     const unsigned int&     GetPrice() const;
     const Order::Direction& GetDirection() const;
-    const std::string       GetDirectionString() const;
 
     Order& SetParticipantID(const UniqueID& participantID);
     Order& SetMarketID(const UniqueID& marketID);

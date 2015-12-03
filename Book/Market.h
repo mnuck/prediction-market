@@ -4,6 +4,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "Order.h"
 #include "UniqueID.h"
@@ -23,6 +24,8 @@ public:
         NO_SUCH_MARKET,
         INVALID_OUTCOME
     };
+    
+    static const std::vector<std::string>& GetResponseStrings();
 
     enum class Status
     {
@@ -30,6 +33,7 @@ public:
         OPENED,
         CLOSED
     };
+    static const std::vector<std::string>& GetStatusStrings();
 
     enum class Outcome
     {
@@ -37,6 +41,7 @@ public:
         TRUE,
         FALSE
     };
+    static const std::vector<std::string>& GetOutcomeStrings();
 
     friend class Book;
 
@@ -49,9 +54,8 @@ public:
 
     const UniqueID&        GetID() const;
     const Market::Status&  GetStatus() const;
-    const std::string      GetStatusString() const;
     const Market::Outcome& GetOutcome() const;
-    const std::string      GetOutcomeString() const;
+
 
     Market& SetStatus(const Market::Status& status);
     Market& SetOutcome(const Market::Outcome& outcome);
