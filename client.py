@@ -14,27 +14,24 @@ class AppSession(ApplicationSession):
     def onJoin(self, details):
         prefix  = "com.nuckdev.prediction_market"
 
-        def onMarket(marketID, status, outcome):
-            print("Market Event: %i %i %i" % (marketID, status, outcome))
+        def onMarket(market):
+            print("Market Event: {}".format(market)
 
-        def onOrder(orderID, marketID, participantID, status, direction, quantity, price):
-            print("Order Event: %i %i %i %i %i %i %i" % (orderID, marketID, participantID, status, direction, quantity, price))
+        def onOrder(order):
+            print("Order Event: {}".format(order))
 
-        def onParticipant(participantID, status, balance):
-            print("Participant Event: %i %i %i" % (participantID, status, balance))
-
-        def onDerp(derp):
-            print derp
+        def onParticipant(participant):
+            print("Participant Event: {}".format(participant))
 
         yield self.subscribe(onMarket, prefix + ".market.feed")
         yield self.subscribe(onOrder, prefix + ".order.feed")
         yield self.subscribe(onParticipant, prefix + ".participant.feed")
-        yield self.subscribe(onDerp, prefix + ".derp")
 
-        #while True:
+        while True:
+            yield sleep(1)
             ## CALL a remote procedure
             ##
-        try:
+"""        try:
             marketID = yield self.call(prefix + ".id")
             participantID = yield self.call(prefix + ".id")
             orderID = yield self.call(prefix + ".id")
@@ -55,7 +52,7 @@ class AppSession(ApplicationSession):
                 raise e
 
             #yield sleep(1)
-
+"""
 
 runner = ApplicationRunner(url=u"ws://localhost:8080/ws", realm=u"realm1")
 runner.run(AppSession)
